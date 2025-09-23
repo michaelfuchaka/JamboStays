@@ -45,7 +45,7 @@ const Home = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -56,7 +56,7 @@ const Home = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -79,7 +79,7 @@ const Home = () => {
                   placeholder="Search by location, property name, or amenities..."
                   value={searchTerm}
                   onChange={handleSearch}
-                  className="w-full pl-10 pr-4 py-3 text-lg bg-white text-gray-900 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"
+                  className="w-full pl-10 pr-4 py-3 text-lg bg-white text-gray-900 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 shadow"
                 />
               </div>
             </div>
@@ -88,7 +88,7 @@ const Home = () => {
       </div>
 
       {/* Properties Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 bg-white">
         {error && (
           <div className="mb-6 p-4 border border-red-200 bg-red-50 rounded-lg">
             <p className="text-red-800">{error}</p>
@@ -98,7 +98,7 @@ const Home = () => {
         {/* Results Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="text-3xl font-bold text-gray-900">
+            <h2 className="text-3xl font-bold text-blue-700">
               {searchTerm ? 'Search Results' : 'Featured Properties'}
             </h2>
             <p className="text-gray-600 mt-1">
@@ -106,7 +106,7 @@ const Home = () => {
             </p>
           </div>
           
-          <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+          <button className="flex items-center space-x-2 px-4 py-2 border border-blue-300 text-blue-700 rounded-lg hover:bg-blue-50">
             <span>🔽</span>
             <span>Filters</span>
           </button>
@@ -127,7 +127,7 @@ const Home = () => {
             {searchTerm && (
               <button 
                 onClick={() => setSearchTerm('')}
-                className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg"
+                className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow"
               >
                 View All Properties
               </button>
