@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./Navbar";
 import Home from "../pages/Home";
 import PropertyDetails from "../pages/PropertyDetails";
-import OwnerDashboard from "../OwnerDashboard"; 
+import OwnerDashboard from "../pages/OwnerDashboard";
+
 function App() {
   return (
     <Router>
@@ -19,4 +20,4 @@ function App() {
   );
 }
 
- export default App;
+export default App;
