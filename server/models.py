@@ -28,8 +28,8 @@ class Property(db.Model, SerializerMixin):
     __tablename__ = 'properties'
 
      # Serialization rules
-   
-    serialize_rules = ('-owner.properties', '-bookings.property', '-images.property')
+
+    serialize_rules = ('-owner.properties', '-bookings.property',)
 
 
     id = db.Column(db.Integer, primary_key=True)

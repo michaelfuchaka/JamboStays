@@ -99,9 +99,11 @@ const OwnerDashboard = () => {
                   <div key={property.id} className="property-card">
                     <div className="property-image-container">
                       <img
-                        src={property.image_url || "https://via.placeholder.com/400x250"}
-                        alt={property.name}
-                        className="property-image"
+                         src={property.images && property.images.length > 0 
+                            ? (property.images.find(img => img.is_featured) || property.images[0]).image_url 
+                            : "https://via.placeholder.com/400x250"}
+                         alt={property.name}
+                         className="property-image"
                       />
                       <div className="property-rating">
                         <span className="stars">★★★★★</span>
