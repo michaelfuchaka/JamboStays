@@ -10,14 +10,21 @@ function App() {
   return (
     <Router>
       <Navbar />
-      <div className="container mx-auto p-4">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/property/:id" element={<PropertyDetails />} />
-          <Route path="/owner-dashboard" element={<OwnerDashboard />} />
-          <Route path="/user-dashboard" element={<UserDashboard />} />
-        </Routes>
-      </div>
+     <Routes>
+  <Route path="/" element={<Home />} />
+  <Route 
+    path="/property/:id" 
+    element={<div className="container mx-auto p-4"><PropertyDetails /></div>} 
+  />
+  <Route 
+    path="/owner-dashboard" 
+    element={<div className="container mx-auto p-4"><OwnerDashboard /></div>} 
+  />
+  <Route 
+    path="/user-dashboard" 
+    element={<div className="container mx-auto p-4"><UserDashboard /></div>} 
+  />
+</Routes>
     </Router>
   );
 }
