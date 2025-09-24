@@ -4,6 +4,7 @@ import Navbar from "./Navbar";
 import Home from "../pages/Home";
 import PropertyDetails from "../pages/PropertyDetails";
 import OwnerDashboard from "../pages/OwnerDashboard";
+import UserDashboard from "../pages/UserDashboard";
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/property/:id" element={<PropertyDetails />} />
           <Route path="/owner-dashboard" element={<OwnerDashboard />} />
+          <Route path="/user-dashboard" element={<UserDashboard />} />
         </Routes>
       </div>
     </Router>
