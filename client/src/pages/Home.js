@@ -58,7 +58,13 @@ function Home() {
           <div className="property-grid">
             {filteredProperties.map((property) => (
               <div key={property.id} className="card">
-                <img src={property.image_url} alt={property.name} />
+                <img 
+                 src={property.images && property.images.length > 0 
+                   ? (property.images.find(img => img.is_featured) || property.images[0]).image_url 
+                   : "https://via.placeholder.com/400x250"
+             } 
+                alt={property.name} 
+            />
                 <div className="card-body">
                   <h3>{property.name}</h3>
                   <p>{property.location}</p>
