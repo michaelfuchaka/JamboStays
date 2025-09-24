@@ -83,56 +83,63 @@ if __name__ == '__main__':
         db.session.commit()
         print(f"Created {len(properties)} properties")
 
-        
-        # Create sample bookings
-        print("Creating bookings...")
-        bookings = []
-        booking_statuses = ['confirmed', 'confirmed', 'confirmed', 'cancelled']
+    print("Creating sample property images...")
+    sample_images = [
+        "https://images.unsplash.com/photo-1564013799919"
+    ]
+    
+    
+    # Create sample bookings
+    # Replace your entire booking section with this:
+    print("Creating bookings...")
+    bookings = []
+    booking_statuses = ['confirmed', 'confirmed', 'confirmed', 'cancelled']
 
-        for _ in range(12):
-            # Generate random dates
-            start_date = fake.date_between(start_date='-30d', end_date='+60d')
-            end_date = start_date + timedelta(days=randint(1, 7))
-            
-            property = rc(properties)
-            days = (end_date - start_date).days
-            total_price = property.price_per_night * days
-            
-            booking = Booking(
-                property=property,
-                guest_name=fake.name(),
-                guest_email=fake.email(),
-                check_in_date=start_date,
-                check_out_date=end_date,
-                total_price=total_price,
-                booking_status=rc(booking_statuses)    
-                        )
-            bookings.append(booking)
-            db.session.add(booking)
+    # Get fresh property instances from database
+    fresh_properties = Property.query.all()
 
-        
-        db.session.commit()
-        print(f"Created {len(bookings)} bookings")
-        
-        print("Seed completed successfully!")
-        
-        # Print summary
-        print("\n--- DATABASE SUMMARY ---")
-        print(f"Total Owners: {Owner.query.count()}")
-        print(f"Total Properties: {Property.query.count()}")
-        print(f"Total Bookings: {Booking.query.count()}")
-        
-        # Show sample data
-        print("\n--- SAMPLE OWNER ---")
-        sample_owner = Owner.query.first()
-        if sample_owner:
-            print(f"Name: {sample_owner.name}")
-            print(f"Email: {sample_owner.email}")
-            print(f"Properties owned: {len(sample_owner.properties)}")
-        print("\n--- SAMPLE PROPERTY ---")
-        sample_property = Property.query.first()
-        if sample_property:
-            print(f"Name: {sample_property.name}")
-            print(f"Location: {sample_property.location}")
-            print(f"Price per night: ${sample_property.price_per_night}")
-            print(f"Bookings: {len(sample_property.bookings)}")        
+    for _ in range(12):
+        start_date = fake.date_between(start_date='-30d', end_date='+60d')
+        end_date = start_date + timedelta(days=randint(1, 7))
+    
+        selected_property = rc(fresh_properties)
+        days = (end_date - start_date).days
+        total_price = selected_property.price_per_night * days
+    
+        booking = Booking(
+            property_id=selected_property.id,  # Use property_id instead of property object
+            guest_name=fake.name(),
+            guest_email=fake.email(),
+            check_in_date=start_date,
+            check_out_date=end_date,
+            total_price=total_price,
+            booking_status=rc(booking_statuses)
+       )
+        bookings.append(booking)
+        db.session.add(booking)
+
+    db.session.commit()
+    print(f"Created {len(bookings)} bookings")
+    
+    print("Seed completed successfully!")
+    
+    # Print summary
+    print("\n--- DATABASE SUMMARY ---")
+    print(f"Total Owners: {Owner.query.count()}")
+    print(f"Total Properties: {Property.query.count()}")
+    print(f"Total Bookings: {Booking.query.count()}")
+    
+    # Show sample data
+    print("\n--- SAMPLE OWNER ---")
+    sample_owner = Owner.query.first()
+    if sample_owner:
+        print(f"Name: {sample_owner.name}")
+        print(f"Email: {sample_owner.email}")
+        print(f"Properties owned: {len(sample_owner.properties)}")
+    print("\n--- SAMPLE PROPERTY ---")
+    sample_property = Property.query.first()
+    if sample_property:
+        print(f"Name: {sample_property.name}")
+        print(f"Location: {sample_property.location}")
+        print(f"Price per night: ${sample_property.price_per_night}")
+        print(f"Bookings: {len(sample_property.bookings)}")        

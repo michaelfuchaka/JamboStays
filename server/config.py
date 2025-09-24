@@ -1,6 +1,8 @@
 # Standard library imports
 
 # Remote library imports
+import os
+from werkzeug.utils import secure_filename
 from flask import Flask
 from flask_cors import CORS
 from flask_migrate import Migrate
@@ -29,3 +31,16 @@ api = Api(app)
 
 # Instantiate CORS
 CORS(app)
+
+
+
+
+app.config['UPLOAD_FOLDER'] = 'uploads/properties'
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+
+# Create upload directory
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
