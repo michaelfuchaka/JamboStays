@@ -3,8 +3,17 @@
 # Standard library imports
 
 # Remote library imports
+from flask import send_from_directory
 from flask import request
 from flask_restful import Resource
+<<<<<<< HEAD
+=======
+import os
+import uuid
+from werkzeug.utils import secure_filename
+from config import allowed_file
+from models import PropertyImage
+>>>>>>> d91e0e9ee6eba7f8ae2d0580f95d76ee34076381
 
 # Local imports
 from config import app, db, api
@@ -152,6 +161,75 @@ def get_property_bookings(id):
         return {"error": "Property not found"}, 404
     
     return [booking.to_dict() for booking in property.bookings]
+
+# Upload property images
+@app.route('/api/properties/<int:property_id>/images', methods=['POST'])
+def upload_property_images(property_id):
+    property = Property.query.get(property_id)
+    if not property:
+        return {"error": "Property not found"}, 404
+    
+    if 'images' not in request.files:
+        return {"error": "No images provided"}, 400
+    
+    files = request.files.getlist('images')
+    uploaded_images = []
+    
+    for i, file in enumerate(files):
+        if file and file.filename != '' and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            unique_filename = f"{uuid.uuid4()}_{filename}"
+            
+            property_folder = os.path.join(app.config['UPLOAD_FOLDER'], str(property_id))
+            os.makedirs(property_folder, exist_ok=True)
+            
+            file_path = os.path.join(property_folder, unique_filename)
+            file.save(file_path)
+            
+            image_url = f"/uploads/properties/{property_id}/{unique_filename}"
+            is_featured = i == 0 and PropertyImage.query.filter_by(property_id=property_id).count() == 0
+            
+            property_image = PropertyImage(
+                property_id=property_id,
+                image_url=image_url,
+                image_name=unique_filename,
+                is_featured=is_featured,
+                upload_order=PropertyImage.query.filter_by(property_id=property_id).count()
+            )
+            
+            db.session.add(property_image)
+            uploaded_images.append(property_image)
+    
+    db.session.commit()
+    return {"message": f"Uploaded {len(uploaded_images)} images", 
+            "images": [img.to_dict() for img in uploaded_images]}, 201
+
+# Get property images
+@app.route('/api/properties/<int:property_id>/images', methods=['GET'])
+def get_property_images(property_id):
+    images = PropertyImage.query.filter_by(property_id=property_id).order_by(PropertyImage.upload_order).all()
+    return [image.to_dict() for image in images]
+
+# Delete specific image
+@app.route('/api/properties/images/<int:image_id>', methods=['DELETE'])
+def delete_property_image(image_id):
+    image = PropertyImage.query.get(image_id)
+    if not image:
+        return {"error": "Image not found"}, 404
+    
+    # Delete physical file
+    file_path = os.path.join('uploads/properties', str(image.property_id), image.image_name)
+    if os.path.exists(file_path):
+        os.remove(file_path)
+    
+    db.session.delete(image)
+    db.session.commit()
+    return {"message": "Image deleted successfully"}
+
+# Serve uploaded files
+@app.route('/uploads/properties/<int:property_id>/<filename>')
+def uploaded_file(property_id, filename):
+    return send_from_directory(os.path.join(app.config['UPLOAD_FOLDER'], str(property_id)), filename)
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)

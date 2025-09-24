@@ -110,26 +110,44 @@ const OwnerDashboard = () => {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {properties.map((property) => (
-                  <div
-                    key={property.id}
-                    className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all transform hover:-translate-y-1"
-                  >
-                    <img
-                      src={
-                        property.image_url || "https://via.placeholder.com/400x250"
-                      }
-                      alt={property.name}
-                      className="w-full h-40 object-cover rounded-t-xl"
-                    />
-                    <div className="p-4">
-                      <h3 className="font-bold text-lg text-gray-900">
-                        {property.name}
-                      </h3>
-                      <p className="text-gray-500 text-sm">{property.location}</p>
-                      <p className="mt-2 text-blue-700 font-semibold">
-                        ${property.price_per_night}/night
-                      </p>
-                      <div className="flex justify-between mt-3">
+                  <div key={property.id} className="property-card">
+                    <div className="property-image-container">
+                      <img
+                        src={property.image_url || "https://via.placeholder.com/400x250"}
+                        alt={property.name}
+                        className="property-image"
+                      />
+                      <div className="property-rating">
+                        <span className="stars">★★★★★</span>
+                        <span className="rating-number">4.8</span>
+                      </div>
+                    </div>
+                    
+                    <div className="property-details">
+                      <h3 className="property-name">{property.name}</h3>
+                      <p className="property-location">{property.location}</p>
+                      
+                      <div className="property-features">
+                        <div className="feature">
+                          <span className="feature-icon">🛏️</span>
+                          <span>2 Beds</span>
+                        </div>
+                        <div className="feature">
+                          <span className="feature-icon">🚿</span>
+                          <span>2 Baths</span>
+                        </div>
+                        <div className="feature">
+                          <span className="feature-icon">📐</span>
+                          <span>850 sqft</span>
+                        </div>
+                      </div>
+
+                      <div className="property-price">
+                        <span className="price">${property.price_per_night}</span>
+                        <span className="price-period">/night</span>
+                      </div>
+
+                      <div className="property-actions">
                         <button
                           onClick={() => {
                             setEditingProperty(property);
