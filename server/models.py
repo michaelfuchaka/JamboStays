@@ -28,7 +28,8 @@ class Property(db.Model, SerializerMixin):
     __tablename__ = 'properties'
 
      # Serialization rules
-    serialize_rules = ('-owner.properties', '-bookings.property')
+
+    serialize_rules = ('-owner.properties', '-bookings.property',)
 
 
     id = db.Column(db.Integer, primary_key=True)
@@ -44,9 +45,17 @@ class Property(db.Model, SerializerMixin):
 
     # Relationships
     bookings = db.relationship('Booking', backref='property', lazy=True, cascade='all, delete-orphan')
-     
+    images = db.relationship('PropertyImage', backref='property', lazy=True, cascade='all, delete-orphan')
+
+
     # Association proxy for many-to-many relationship with guests through bookings
     guests = association_proxy('bookings', 'guest_email')
+
+    #  method to get the featured image
+    def get_featured_image(self):
+        featured = PropertyImage.query.filter_by(property_id=self.id, is_featured=True).first()
+        if featured:
+            return featured.image_url
     
     def __repr__(self):
         return f'<Property {self.name}>'
@@ -69,3 +78,19 @@ class Booking(db.Model, SerializerMixin):
     
     def __repr__(self):
         return f'<Booking {self.guest_name} - Property {self.property_id}>'
+class PropertyImage(db.Model, SerializerMixin):
+    __tablename__ = 'property_images'
+    
+    # Serialization rules
+    serialize_rules = ('-property.images',)
+    
+    id = db.Column(db.Integer, primary_key=True)
+    property_id = db.Column(db.Integer, db.ForeignKey('properties.id'), nullable=False)
+    image_url = db.Column(db.String(255), nullable=False)
+    image_name = db.Column(db.String(100), nullable=False)
+    is_featured = db.Column(db.Boolean, default=False)  # Main property image
+    upload_order = db.Column(db.Integer, default=0)  # For image ordering
+    created_at = db.Column(DateTime, default=datetime.utcnow)
+    
+    def __repr__(self):
+        return f'<PropertyImage {self.image_name}>'
