@@ -63,6 +63,16 @@ function Navbar() {
             onMouseEnter={(e) => (e.target.style.color = "#fff")}
             onMouseLeave={(e) => (e.target.style.color = "#ffca28")}
           >
+        <li>
+         <Link
+            to="/user-dashboard"
+            style={linkStyle}
+            onMouseEnter={(e) => (e.target.style.color = "#fff")}
+            onMouseLeave={(e) => (e.target.style.color = "#ffca28")}
+        >
+            User Dashboard
+        </Link>
+       </li>
             Owner Dashboard
           </Link>
         </li>
