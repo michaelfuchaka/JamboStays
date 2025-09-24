@@ -18,11 +18,11 @@ function App() {
   />
   <Route 
     path="/owner-dashboard" 
-    element={<div className="container mx-auto p-4"><OwnerDashboard /></div>} 
+    element={<div className="container mx-auto p-4" style={{paddingTop: "80px"}}><OwnerDashboard /></div>} 
   />
   <Route 
     path="/user-dashboard" 
-    element={<div className="container mx-auto p-4"><UserDashboard /></div>} 
+    element={<div className="container mx-auto p-4" style={{paddingTop: "80px"}}><UserDashboard /></div>} 
   />
 </Routes>
     </Router>
