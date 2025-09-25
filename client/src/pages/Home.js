@@ -27,8 +27,13 @@ function Home() {
 
   return (
     <div  className="homepage">
-      <div className="hero-section">
-  <div className="hero-content">
+      <div className="hero-section" 
+      style={{
+      backgroundImage: 'url("https://images.unsplash.com/photo-1515263487990-61b07816b324?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&fit=crop")',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+       backgroundRepeat: 'no-repeat'}}>
+    <div className="hero-content">
     <h1 className="hero-title">Finding Your New Home Is Simple</h1>
     <p className="hero-subtitle">
       Discover handpicked properties for your next trip

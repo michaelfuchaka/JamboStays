@@ -1,11 +1,12 @@
 
 
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // ADD THIS IMPORT
+import { useNavigate } from "react-router-dom"; 
+import { useAuth } from "../components/App"
 
 function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
-  // ADD THESE STATE VARIABLES
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -16,9 +17,10 @@ function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   
-  const navigate = useNavigate(); // ADD THIS HOOK
+  const navigate = useNavigate(); 
+  const { login } = useAuth();
 
-  // ADD THIS FUNCTION - Handle input changes
+  
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -29,7 +31,6 @@ function AuthPage() {
     if (error) setError("");
   };
 
-  // ADD THIS FUNCTION - Form validation
   const validateForm = () => {
     if (!formData.email || !formData.password) {
       setError("Email and password are required");
@@ -61,7 +62,7 @@ function AuthPage() {
     return true;
   };
 
-  // ADD THIS FUNCTION - Handle form submission
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -69,8 +70,7 @@ function AuthPage() {
 
     setLoading(true);
     setError("");
-
-    try {
+   try {
       const endpoint = isLogin ? "/api/login" : "/api/register";
       const payload = isLogin 
         ? {
@@ -87,7 +87,6 @@ function AuthPage() {
       console.log("Making request to:", `http://127.0.0.1:5555${endpoint}`);
       console.log("Payload:", payload);
 
-      // YOUR FLASK APP RUNS ON PORT 5555 - Update this
       const response = await fetch(`http://127.0.0.1:5555${endpoint}`, {
         method: "POST",
         headers: {
@@ -101,20 +100,20 @@ function AuthPage() {
       console.log("Response data:", data);
 
       if (response.ok) {
-        // Store token and user data
-        localStorage.setItem("token", data.access_token);
-        localStorage.setItem("user", JSON.stringify(data.user));
-        
-        // Navigate based on user type
-        if (data.user.user_type === "owner") {
-          navigate("/owner-dashboard");
-        } else {
-          navigate("/user-dashboard");
-        }
+ 
+  login(data.user, data.access_token);
+  
+  
+     if (data.user.user_type === "owner") {
+     navigate("/owner-dashboard");
+    } else {
+    navigate("/user-dashboard");
+   }
       } else {
         setError(data.error || "Authentication failed");
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error("Auth error:", error);
       setError(`Network error: ${error.message}. Please check if the backend server is running on port 5555.`);
     } finally {
@@ -155,7 +154,7 @@ function AuthPage() {
     borderRadius: "8px",
     border: "1px solid #cbd5e1",
     fontSize: "1rem",
-    boxSizing: "border-box", // ADD THIS
+    boxSizing: "border-box", 
   };
 
   const buttonStyle = {
@@ -163,11 +162,11 @@ function AuthPage() {
     padding: "0.75rem",
     border: "none",
     borderRadius: "8px",
-    background: loading ? "#94a3b8" : "#3b82f6", // CHANGE THIS - Show loading state
+    background: loading ? "#94a3b8" : "#3b82f6", 
     color: "white",
     fontSize: "1rem",
     fontWeight: "600",
-    cursor: loading ? "not-allowed" : "pointer", // CHANGE THIS
+    cursor: loading ? "not-allowed" : "pointer", 
     transition: "all 0.2s ease",
   };
 
@@ -177,8 +176,6 @@ function AuthPage() {
     fontSize: "0.9rem",
     cursor: "pointer",
   };
-
-  // ADD THIS STYLE - Error message styling
   const errorStyle = {
     color: "#ef4444",
     fontSize: "0.875rem",
@@ -189,7 +186,7 @@ function AuthPage() {
     border: "1px solid #fecaca",
   };
 
-  // ADD THIS STYLE - Select styling
+  
   const selectStyle = {
     ...inputStyle,
     appearance: "none",
@@ -205,12 +202,12 @@ function AuthPage() {
       <div style={cardStyle}>
         <h2 style={titleStyle}>{isLogin ? "Sign In" : "Sign Up"}</h2>
         
-        {/* ADD THIS - Error display */}
+       
         {error && <div style={errorStyle}>{error}</div>}
         
-        {/* CHANGE THIS - Add onSubmit handler */}
+        
         <form onSubmit={handleSubmit}>
-          {/* CHANGE THIS - Add name and value props, onChange handler */}
+          
           <input
             type="email"
             name="email"
@@ -220,8 +217,7 @@ function AuthPage() {
             onChange={handleInputChange}
             required
           />
-          
-          {/* ADD THIS - Name field for registration */}
+         
           {!isLogin && (
             <input
               type="text"
@@ -234,7 +230,7 @@ function AuthPage() {
             />
           )}
           
-          {/* CHANGE THIS - Add name and value props, onChange handler */}
+          
           <input
             type="password"
             name="password"
@@ -244,8 +240,7 @@ function AuthPage() {
             onChange={handleInputChange}
             required
           />
-          
-          {/* CHANGE THIS - Add name and value props, onChange handler */}
+       
           {!isLogin && (
             <input
               type="password"
@@ -258,7 +253,7 @@ function AuthPage() {
             />
           )}
           
-          {/* ADD THIS - User type selection for registration */}
+      
           {!isLogin && (
             <select
               name="userType"
@@ -270,8 +265,7 @@ function AuthPage() {
               <option value="owner">Owner (List Properties)</option>
             </select>
           )}
-          
-          {/* CHANGE THIS - Add disabled state */}
+  
           <button type="submit" style={buttonStyle} disabled={loading}>
             {loading 
               ? (isLogin ? "Signing In..." : "Registering...") 
