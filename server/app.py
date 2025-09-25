@@ -3,22 +3,30 @@
 # Standard library imports
 
 # Remote library imports
+from flask import Flask, send_from_directory, request, jsonify
 from flask import send_from_directory
 from flask import request
 from flask_restful import Resource
 import os
 import uuid
+import re
+from datetime import datetime
+from models import Owner, Property, Booking, PropertyImage, User  # Add User here
 from werkzeug.utils import secure_filename
 from config import allowed_file
 from models import PropertyImage
+from flask import request, jsonify
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from flask_cors import CORS
 
 # Local imports
-from config import app, db, api
+from config import app, db, api, allowed_file
 # Add your model imports
 
-from models import Owner, Property, Booking
+from models import Owner, Property, Booking,PropertyImage, User
 
-# Views go here!
+CORS(app) 
+
 
 @app.route('/api/properties', methods=['GET'])
 def get_properties():
@@ -134,8 +142,11 @@ def update_property(id):
 # Bookings CRUD
 @app.route('/api/bookings', methods=['GET'])
 def get_bookings():
-    bookings = Booking.query.all()
-    return [booking.to_dict() for booking in bookings]
+    try:
+        bookings = Booking.query.all()
+        return [booking.to_dict() for booking in bookings]
+    except Exception as e:
+        return {"error": str(e)}, 500
 
 @app.route('/api/bookings/<int:id>', methods=['PATCH'])
 def update_booking(id):
@@ -227,6 +238,235 @@ def delete_property_image(image_id):
 @app.route('/uploads/properties/<int:property_id>/<filename>')
 def uploaded_file(property_id, filename):
     return send_from_directory(os.path.join(app.config['UPLOAD_FOLDER'], str(property_id)), filename)
+
+# Email validation helper function
+def is_valid_email(email):
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return re.match(pattern, email) is not None
+
+
+@app.route('/api/register', methods=['POST'])
+def register():
+    try:
+        # Get data from request
+        data = request.get_json()
+        
+        # Validate required fields
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+            
+        email = data.get('email', '').strip().lower()
+        password = data.get('password', '')
+        name = data.get('name', '').strip()
+        user_type = data.get('user_type', 'guest')  # Default to guest
+        
+        # Validation checks
+        if not email or not password or not name:
+            return jsonify({'error': 'Email, password, and name are required'}), 400
+        
+        if not is_valid_email(email):
+            return jsonify({'error': 'Invalid email format'}), 400
+            
+        if len(password) < 6:
+            return jsonify({'error': 'Password must be at least 6 characters long'}), 400
+            
+        if len(name) < 2:
+            return jsonify({'error': 'Name must be at least 2 characters long'}), 400
+            
+        if user_type not in ['guest', 'owner']:
+            return jsonify({'error': 'Invalid user type'}), 400
+        
+        # Check if user already exists
+        existing_user = User.query.filter_by(email=email).first()
+        if existing_user:
+            return jsonify({'error': 'User with this email already exists'}), 409
+        
+        # Create new user
+        new_user = User(
+            email=email,
+            name=name,
+            user_type=user_type,
+            created_at=datetime.utcnow()
+        )
+        new_user.set_password(password)
+        
+        # Save to database
+        db.session.add(new_user)
+        db.session.commit()
+        
+        # Create access token
+        access_token = create_access_token(identity=new_user.id)
+        
+        # Return success response
+        return jsonify({
+            'message': 'User registered successfully',
+            'access_token': access_token,
+            'user': {
+                'id': new_user.id,
+                'email': new_user.email,
+                'name': new_user.name,
+                'user_type': new_user.user_type
+            }
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': 'Registration failed. Please try again.'}), 500
+
+@app.route('/api/login', methods=['POST'])
+def login():
+    try:
+        # Get data from request
+        data = request.get_json()
+        
+        # Validate required fields
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+            
+        email = data.get('email', '').strip().lower()
+        password = data.get('password', '')
+        
+        if not email or not password:
+            return jsonify({'error': 'Email and password are required'}), 400
+        
+        # Find user by email
+        user = User.query.filter_by(email=email).first()
+        
+        # Check if user exists and password is correct
+        if not user or not user.check_password(password):
+            return jsonify({'error': 'Invalid email or password'}), 401
+        
+        # Create access token
+        access_token = create_access_token(identity=user.id)
+        
+        # Return success response
+        return jsonify({
+            'message': 'Login successful',
+            'access_token': access_token,
+            'user': {
+                'id': user.id,
+                'email': user.email,
+                'name': user.name,
+                'user_type': user.user_type
+            }
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': 'Login failed. Please try again.'}), 500
+@app.route('/api/verify', methods=['GET'])
+@jwt_required()
+def verify():
+    try:
+        # Get current user ID from JWT token
+        current_user_id = get_jwt_identity()
+        
+        # Find user by ID
+        user = User.query.get(current_user_id)
+        
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        # Return success response with user info
+        return jsonify({
+            'message': 'Token is valid',
+            'user': {
+                'id': user.id,
+                'email': user.email,
+                'name': user.name,
+                'user_type': user.user_type
+            }
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': 'Token verification failed'}), 401
+
+@app.route('/api/logout', methods=['POST'])
+@jwt_required()
+def logout():
+    # Since JWT tokens are stateless, logout is mainly handled client-side
+    # by removing the token from localStorage
+    return jsonify({'message': 'Logout successful'}), 200
+
+# Get Current User Profile Route
+@app.route('/api/profile', methods=['GET'])
+@jwt_required()
+def get_profile():
+    try:
+        current_user_id = get_jwt_identity()
+        current_user = User.query.get(current_user_id)
+        
+        if not current_user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        return jsonify({
+            'user': {
+                'id': current_user.id,
+                'email': current_user.email,
+                'name': current_user.name,
+                'user_type': current_user.user_type,
+                'created_at': current_user.created_at.isoformat()
+            }
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': 'Failed to get profile'}), 500
+
+# Update User Profile Route
+@app.route('/api/profile', methods=['PUT'])
+@jwt_required()
+def update_profile():
+    try:
+        current_user_id = get_jwt_identity()
+        current_user = User.query.get(current_user_id)
+        
+        if not current_user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+        
+        # Update name if provided
+        if 'name' in data:
+            name = data['name'].strip()
+            if len(name) >= 2:
+                current_user.name = name
+            else:
+                return jsonify({'error': 'Name must be at least 2 characters long'}), 400
+        
+        # Update password if provided
+        if 'password' in data:
+            password = data['password']
+            if len(password) >= 6:
+                current_user.set_password(password)
+            else:
+                return jsonify({'error': 'Password must be at least 6 characters long'}), 400
+        
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Profile updated successfully',
+            'user': {
+                'id': current_user.id,
+                'email': current_user.email,
+                'name': current_user.name,
+                'user_type': current_user.user_type
+            }
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': 'Failed to update profile'}), 500
+
+# Error handler for JWT errors
+@app.errorhandler(422)
+def handle_unprocessable_entity(e):
+    return jsonify({'error': 'Invalid token format'}), 422
+
+@app.errorhandler(401)
+def handle_unauthorized(e):
+    return jsonify({'error': 'Token is invalid or expired'}), 401
+
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
