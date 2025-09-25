@@ -561,9 +561,8 @@ body {
 }
 
 .booking-status.pending {
-  background: #fef3c7;
-  color: #92400e;
-}
+background: #e0f2fe;   /* light blue */
+  color: #0369a1;   }
 
 .booking-status.cancelled {
   background: #fef2f2;
@@ -695,7 +694,7 @@ body {
   width: 50px;
   height: 50px;
   border: 3px solid #e8e4de;
-  border-top: 3px solid #d4af37;
+  border-top: 3px solid var(--primary-blue);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 20px;
@@ -733,14 +732,14 @@ body {
 
 .tab-button:hover {
   color: #2c1810;
-  background: rgba(212, 175, 55, 0.1);
+  background: rgba(59, 130, 246, 0.1);
 }
 
 .tab-button.active {
   color: #2c1810;
-  border-bottom-color: #d4af37;
+  border-bottom-color: var(--primary-blue);;
   font-weight: 500;
-  background: rgba(212, 175, 55, 0.15);
+  background: rgba(59, 130, 246, 0.15);
 }
 
 /* Content Sections */
@@ -796,7 +795,7 @@ body {
 
 .luxury-search:focus {
   outline: none;
-  border-color: #d4af37;
+  border-color: var(--primary-blue);
   box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1), inset 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
@@ -818,12 +817,12 @@ body {
 }
 
 .luxury-select:hover {
-  border-color: #d4af37;
+  border-color: var(--primary-blue);
 }
 
 .luxury-select:focus {
   outline: none;
-  border-color: #d4af37;
+  border-color: var(--primary-blue);
   box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
 }
 
@@ -852,7 +851,7 @@ body {
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, #d4af37, #b8941f, #d4af37);
+  background: linear-gradient(90deg, var(--primary-blue), var(--dark-blue), var(--primary-blue));
   opacity: 0;
   transition: opacity 0.3s ease;
 }
