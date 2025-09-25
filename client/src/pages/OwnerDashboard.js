@@ -156,6 +156,10 @@ const OwnerDashboard = () => {
   }
 }, [properties]);
 
+useEffect(() => {
+  fetchProperties();
+}, []);
+
     const fetchProperties = async () => {
   try {
     // Get current user info

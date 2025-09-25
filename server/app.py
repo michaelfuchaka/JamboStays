@@ -511,10 +511,10 @@ def add_property_image_url(property_id):
 @jwt_required()
 def get_owner_properties(owner_id):
     current_user_id = get_jwt_identity()
-    current_user = User.query.get(current_user_id)
+    
     
     # Make sure user can only access their own properties
-    if current_user.id != owner_id:
+    if current_user_id != owner_id:
         return {"error": "Unauthorized access"}, 403
     
     properties = Property.query.filter_by(owner_id=owner_id).all()
