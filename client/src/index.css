@@ -31,8 +31,8 @@ body {
 /* Hero Section */
 .hero-section {
   height: 100vh;
-  background: var(--hero-gradient);
-  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="rgba(255,255,255,0.1)" fill-opacity="1" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,112C960,128,1056,160,1152,160C1248,160,1344,128,1392,112L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
+  background: #1e293b;
+  /* background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="rgba(255,255,255,0.1)" fill-opacity="1" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,112C960,128,1056,160,1152,160C1248,160,1344,128,1392,112L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>'); */
   background-size: cover;
   background-position: center;
   display: flex;
@@ -42,7 +42,7 @@ body {
   padding: 0 2rem;
 }
 
-.hero-section::before {
+/* .hero-section::before {
   content: '';
   position: absolute;
   top: 0;
@@ -51,7 +51,7 @@ body {
   bottom: 0;
   background: rgba(0, 0, 0, 0.3);
   z-index: 1;
-}
+} */
 
 .hero-content {
   text-align: center;
@@ -240,6 +240,7 @@ body {
 .dashboard-hero {
   height: 40vh;
   /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
+   background-color:#64748b;
   background-size: cover;
   background-position: center;
   display: flex;
@@ -247,8 +248,9 @@ body {
   justify-content: center;
   position: relative;
   margin-bottom: 3rem;
+    margin-top: 0;
 }
-
+/* 
 .dashboard-hero::before {
   content: '';
   position: absolute;
@@ -258,7 +260,7 @@ body {
   bottom: 0;
   background: rgba(0, 0, 0, 0.3);
   z-index: 1;
-}
+} */
 
 .hero-overlay {
   text-align: center;
@@ -614,11 +616,16 @@ body {
   line-height: 1.6;
   color: #333;
 }
-
+.luxury-dashboard h1 {
+  color:  #f5f5dc; /* Beige */
+}
+.luxury-dashboard p {
+  color: #e5e7eb;  /* Soft Gray */
+}
 /* Dashboard Layout */
 .luxury-dashboard {
   font-family: 'Georgia', 'Times New Roman', serif;
-  background: linear-gradient(135deg, #f5f3f0 0%, #e8e4de 100%);
+  background: linear-gradient(135deg, #64748b 0%, #475569 100%);
   min-height: 100vh;
   padding: 40px 20px;
 }
@@ -641,7 +648,7 @@ body {
 
 .subtitle {
   font-size: 1.1rem;
-  color: #8b7355;
+  color: #2c1810;
   font-style: italic;
   max-width: 600px;
   margin: 0 auto;
@@ -682,7 +689,7 @@ body {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #f5f3f0 0%, #e8e4de 100%);
+ background: linear-gradient(135deg, #64748b 0%, #475569 100%);
 }
 
 .loading-content {
@@ -721,7 +728,7 @@ body {
   border: none;
   padding: 15px 30px;
   font-size: 1rem;
-  color: #8b7355;
+  color: #2c1810;;
   cursor: pointer;
   transition: all 0.3s ease;
   border-bottom: 3px solid transparent;
@@ -956,12 +963,12 @@ body {
 
 .rating-number {
   font-size: 0.9rem;
-  color: #8b7355;
+  color: #2c1810;
   font-weight: 600;
 }
 
 .property-location {
-  color: #8b7355;
+  color:  #2c1810;
   font-size: 0.95rem;
   margin: 0 0 12px 0;
   font-style: italic;
