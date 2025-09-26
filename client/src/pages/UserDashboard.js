@@ -1,4 +1,5 @@
-
+import Footer from '../components/Footer';
+// Then add <Footer /> at the bottom of your JSX return statement
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
