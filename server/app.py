@@ -12,14 +12,9 @@ import re
 from datetime import datetime
 from models import Owner, Property, Booking, PropertyImage, User ,Favorite # Add User here
 from werkzeug.utils import secure_filename
-from config import allowed_file
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from flask_cors import CORS
-
-# Local imports
 from config import app, db, api, allowed_file
-# Add your model imports
-
 from models import Owner, Property, Booking,PropertyImage, User
 
 CORS(app) 
