@@ -15,28 +15,33 @@ const UserDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterBy, setFilterBy] = useState("all");
   const [sortBy, setSortBy] = useState("name");
+  const [checkInDate, setCheckInDate] = useState("");
+  const [checkOutDate, setCheckOutDate] = useState("");
+  const [availableProperties, setAvailableProperties] = useState([]);
 
- 
-
-useEffect(() => {
+ useEffect(() => {
   const checkUserAccess = async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
         setError("Please log in to view your dashboard.");
-        setLoading(false); // Stop loading
+        setLoading(false);
         return;
       }
-      // If token exists, proceed with data fetching
       fetchData();
     } catch (err) {
       setError("Authentication failed.");
       setLoading(false);
     }
   };
-  
   checkUserAccess();
 }, []);
+
+useEffect(() => {
+  if (checkInDate && checkOutDate) {
+    fetchAvailableProperties();
+  }
+}, [checkInDate, checkOutDate]);
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -111,7 +116,20 @@ const fetchBookings = async () => {
     }
   }
 };
-
+const fetchAvailableProperties = async () => {
+  if (!checkInDate || !checkOutDate) return;
+  
+  try {
+    const response = await api.post("/properties/available", {
+      check_in_date: checkInDate,
+      check_out_date: checkOutDate
+    });
+    setAvailableProperties(response.data);
+  } catch (err) {
+    console.error("Failed to load available properties:", err);
+    setError("Failed to check availability. Please try again.");
+  }
+};
   const toggleFavorite = async (propertyId) => {
   try {
     const token = localStorage.getItem('token');
@@ -161,37 +179,38 @@ try {
 
   };
 
-  const getFilteredProperties = () => {
-    let filtered = properties;
+ const getFilteredProperties = () => {
+  // Use available properties if dates are selected, otherwise use all properties
+  let filtered = (checkInDate && checkOutDate) ? availableProperties : properties;
 
-if (searchTerm) {
-  filtered = filtered.filter(property =>
-    property.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    property.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (property.amenities && property.amenities.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
-}
-
-if (filterBy === "favorites") {
-  const favoriteIds = favorites.map(fav => fav.property_id);
-  filtered = filtered.filter(property => favoriteIds.includes(property.id));
-}
-
-filtered.sort((a, b) => {
-  switch (sortBy) {
-    case "price_low":
-      return a.price_per_night - b.price_per_night;
-    case "price_high":
-      return b.price_per_night - a.price_per_night;
-    case "guests":
-      return b.max_guests - a.max_guests;
-    default:
-      return a.name.localeCompare(b.name);
+  if (searchTerm) {
+    filtered = filtered.filter(property =>
+      property.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      property.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (property.amenities && property.amenities.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
   }
-});
 
-return filtered;
-  };
+  if (filterBy === "favorites") {
+    const favoriteIds = favorites.map(fav => fav.property_id);
+    filtered = filtered.filter(property => favoriteIds.includes(property.id));
+  }
+
+  filtered.sort((a, b) => {
+    switch (sortBy) {
+      case "price_low":
+        return a.price_per_night - b.price_per_night;
+      case "price_high":
+        return b.price_per_night - a.price_per_night;
+      case "guests":
+        return b.max_guests - a.max_guests;
+      default:
+        return a.name.localeCompare(b.name);
+    }
+  });
+
+  return filtered;
+};
 
   const getBookingStatusColor = (status) => {
     switch (status) {
@@ -224,7 +243,7 @@ return filtered;
     return stars;
   };
 
-  if (loading) {
+ if (loading) {
      return (
       <div className="loading-container">
         <div className="loading-content">
@@ -287,6 +306,39 @@ return filtered;
               onChange={(e) => setSearchTerm(e.target.value)}
               className="luxury-search"
             />
+          </div>
+    <div className="date-picker-container">
+            <div className="date-inputs">
+              <div className="date-input-group">
+                <label htmlFor="checkin">Check-in</label>
+                <input
+                  id="checkin"
+                  type="date"
+                  value={checkInDate}
+                  onChange={(e) => setCheckInDate(e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
+                  className="luxury-date-input"
+                />
+              </div>
+              <div className="date-input-group">
+                <label htmlFor="checkout">Check-out</label>
+                <input
+                  id="checkout"
+                  type="date"
+                  value={checkOutDate}
+                  onChange={(e) => setCheckOutDate(e.target.value)}
+                  min={checkInDate || new Date().toISOString().split('T')[0]}
+                  className="luxury-date-input"
+                />
+              </div>
+              <button
+                onClick={fetchAvailableProperties}
+                disabled={!checkInDate || !checkOutDate}
+                className="check-availability-btn"
+              >
+                Check Availability
+              </button>
+            </div>
           </div>
 
           <div className="filter-controls">
@@ -458,8 +510,8 @@ return filtered;
         )}
       </div>
     )}
-  </div>
-</div>
+      </div>
+    </div>
   );
 };
 

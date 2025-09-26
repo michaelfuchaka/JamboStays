@@ -663,6 +663,32 @@ def remove_favorite(property_id):
         db.session.rollback()
         return {"error": str(e)}, 500
 
+@app.route('/api/properties/available', methods=['POST'])
+def get_available_properties():
+    try:
+        data = request.get_json()
+        check_in = datetime.strptime(data['check_in_date'], '%Y-%m-%d').date()
+        check_out = datetime.strptime(data['check_out_date'], '%Y-%m-%d').date()
+        
+        # Get all properties
+        all_properties = Property.query.all()
+        available_properties = []
+        
+        for property in all_properties:
+            # Check if property has conflicting bookings
+            conflicting_bookings = Booking.query.filter(
+                Booking.property_id == property.id,
+                Booking.booking_status == 'confirmed',
+                ~((Booking.check_out_date <= check_in) | (Booking.check_in_date >= check_out))
+            ).first()
+            
+            if not conflicting_bookings:
+                available_properties.append(property)
+        
+        return [property.to_dict() for property in available_properties]
+    except Exception as e:
+        return {"error": str(e)}, 500
+
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
 
