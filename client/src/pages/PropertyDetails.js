@@ -15,25 +15,38 @@ const PropertyDetails = () => {
   }, [id])
 
   const fetchProperty = async () => {
-    try {
-      const response = await axios.get(`/api/properties/${id}`)
-      setProperty(response.data)
-    } catch (error) {
-      setError('Failed to load property details. Please try again later.')
-    } finally {
-      setLoading(false)
-    }
+  try {
+    const response = await axios.get(`/api/properties/${id}`)
+    console.log('Property data:', response.data); // Debug line
+    setProperty(response.data)
+  } catch (error) {
+    console.error('Fetch property error:', error); // Debug line
+    setError('Failed to load property details. Please try again later.')
+  } finally {
+    setLoading(false)
   }
+}
 
   const handleBookingSubmit = async (bookingData) => {
-    try {
-      const response = await axios.post('/api/bookings', bookingData)
-      setBookingMessage('Booking successful! You will receive a confirmation email shortly.')
-      // Could also redirect to a confirmation page
-    } catch (error) {
-      setBookingMessage(error.response?.data?.error || 'Booking failed. Please try again.')
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setBookingMessage('Please log in to make a booking.');
+      return;
     }
+
+    const response = await axios.post('/api/bookings', bookingData, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    })
+    setBookingMessage('Booking successful! You will receive a confirmation email shortly.')
+  } catch (error) {
+    console.error('Booking error:', error.response?.data);
+    setBookingMessage(error.response?.data?.message || error.response?.data?.error || 'Booking failed. Please try again.')
   }
+}
 
   const getAmenityIcon = (amenity) => {
     const amenityLower = amenity.toLowerCase()
