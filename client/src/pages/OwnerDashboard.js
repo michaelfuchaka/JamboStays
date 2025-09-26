@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState } from "react";
 import api from "../services/api";
+// Then add <Footer /> at the bottom of your JSX return statement
 const PropertyForm = ({ property, onSave, onCancel }) => {
   const [formData, setFormData] = useState({
     name: property?.name || '',
@@ -160,7 +161,7 @@ useEffect(() => {
   fetchProperties();
 }, []);
 
-    const fetchProperties = async () => {
+const fetchProperties = async () => {
   try {
     // Get current user info
     const token = localStorage.getItem('token');
@@ -169,15 +170,18 @@ useEffect(() => {
     });
     const currentUser = userResponse.data.user;
     
-    // Get only this owner's properties
-    const res = await api.get(`/owners/${currentUser.id}/properties`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    setProperties(res.data);
+    // Fetch all properties, then filter by owner_id
+    const res = await api.get('/properties');
+    const ownerProperties = res.data.filter(property => 
+      property.owner_id === currentUser.id
+    );
+    
+    setProperties(ownerProperties);
   } catch (err) {
     setError("Failed to load properties. Please try again.");
   }
 };
+
 
 const fetchBookings = async () => {
   try {
