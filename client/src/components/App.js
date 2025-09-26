@@ -6,12 +6,10 @@ import PropertyDetails from "../pages/PropertyDetails";
 import OwnerDashboard from "../pages/OwnerDashboard";
 import UserDashboard from "../pages/UserDashboard";
 import AuthPage from "../pages/AuthPage"; // ✅ Import AuthPage
-
+import Footer from './Footer'
 // Create Authentication Context
 const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
-
-
 
 function App() {
   const [user, setUser] = useState(null);
@@ -64,6 +62,7 @@ function App() {
           {/* Auth route only for non-logged in users */}
           {!user && <Route path="/auth" element={<AuthPage />} />}
         </Routes>
+        <Footer />
       </Router>
     </AuthContext.Provider>
   );
