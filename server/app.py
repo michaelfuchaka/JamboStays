@@ -5,7 +5,6 @@
 # Remote library imports
 from flask import Flask, send_from_directory, request, jsonify
 from flask import send_from_directory
-from flask import request
 from flask_restful import Resource
 import os
 import uuid
@@ -14,8 +13,6 @@ from datetime import datetime
 from models import Owner, Property, Booking, PropertyImage, User ,Favorite # Add User here
 from werkzeug.utils import secure_filename
 from config import allowed_file
-from models import PropertyImage
-from flask import request, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from flask_cors import CORS
 
