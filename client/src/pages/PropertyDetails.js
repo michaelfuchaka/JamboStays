@@ -88,7 +88,9 @@ const PropertyDetails = () => {
           </button>
         </Link>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="flex justify-center">
+       <div className="combined-card">
+
           {/* Property Details */}
           <div className="lg:col-span-2 space-y-6">
             {/* Property Image */}
@@ -109,7 +111,8 @@ const PropertyDetails = () => {
             </div>
 
             {/* Property Info */}
-            <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="bg-white rounded-lg shadow-md p-6 property-card">
+
               <div className="space-y-4">
                 <div>
                   <h1 className="text-3xl font-bold text-gray-900 mb-2">{property.name}</h1>
@@ -155,7 +158,7 @@ const PropertyDetails = () => {
 
             {/* Owner Information */}
             {property.owner && (
-              <div className="bg-white rounded-lg shadow-md p-6">
+              <div className="bg-white rounded-lg shadow-md p-6 owner-card">
                 <h3 className="text-xl font-semibold text-gray-900 mb-4">Property Owner</h3>
                 <div className="flex items-start space-x-4">
                   <div className="bg-blue-100 p-3 rounded-full">
@@ -183,7 +186,7 @@ const PropertyDetails = () => {
 
           {/* Booking Form */}
           <div className="lg:col-span-1">
-            <div className="sticky top-24">
+            <div className="sticky top-24 booking-card">
               <BookingForm 
                 propertyId={property.id} 
                 onSubmit={handleBookingSubmit}
@@ -200,7 +203,9 @@ const PropertyDetails = () => {
           </div>
         </div>
       </div>
+      </div>
     </div>
+
   )
 }
 

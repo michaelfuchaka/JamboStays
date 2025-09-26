@@ -150,6 +150,28 @@ const OwnerDashboard = () => {
   const [activeTab, setActiveTab] = useState("properties");
   const [showPropertyForm, setShowPropertyForm] = useState(false);
   const [editingProperty, setEditingProperty] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+
+useEffect(() => {
+  const checkUserType = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const userResponse = await api.get('/profile', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (userResponse.data.user.user_type !== 'owner') {
+        setError("Access denied. Owner privileges required.");
+        return;
+      }
+      setCurrentUser(userResponse.data.user);
+    } catch (err) {
+      setError("Authentication failed.");
+    }
+  };
+  
+  checkUserType();
+}, []);
 
   useEffect(() => {
   if (properties.length > 0) {
@@ -170,11 +192,13 @@ const fetchProperties = async () => {
     });
     const currentUser = userResponse.data.user;
     
+
     // Fetch all properties, then filter by owner_id
     const res = await api.get('/properties');
     const ownerProperties = res.data.filter(property => 
-      property.owner_id === currentUser.id
+      property.owner_id === currentUser.id && currentUser.user_type === 'owner'
     );
+
     
     setProperties(ownerProperties);
   } catch (err) {
@@ -185,13 +209,12 @@ const fetchProperties = async () => {
 
 const fetchBookings = async () => {
   try {
-    const res = await api.get("/bookings");
-    // Filter bookings to show only those for current owner's properties
-    const ownerPropertyIds = properties.map(p => p.id);
-    const ownerBookings = res.data.filter(booking => 
-      ownerPropertyIds.includes(booking.property_id)
-    );
-    setBookings(ownerBookings);
+    const token = localStorage.getItem('token');
+    const res = await api.get("/owner/bookings", {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    
+    setBookings(res.data);
   } catch (err) {
     setError("Failed to load bookings. Please try again.");
   }

@@ -43,14 +43,20 @@ def get_property(id):
 
 
 @app.route('/api/bookings', methods=['POST'])
+@jwt_required() 
 def create_booking():
     from datetime import datetime
     
     data = request.get_json()
-    
+    current_user_id = get_jwt_identity()
+    current_user = User.query.get(current_user_id)
+    if not current_user:
+        return {"error": "User not found"}, 401
     # Basic validation
-    if not all(k in data for k in ('property_id', 'guest_name', 'guest_email', 'check_in_date', 'check_out_date')):
+    if not all(k in data for k in ('property_id', 'check_in_date', 'check_out_date')):
+    
         return {"error": "Missing required fields"}, 400
+    
     
     # Calculate total price
     property = Property.query.get(data['property_id'])
@@ -64,13 +70,13 @@ def create_booking():
     total_price = property.price_per_night * days
     
     booking = Booking(
-        property_id=data['property_id'],
-        guest_name=data['guest_name'],
-        guest_email=data['guest_email'],
-        check_in_date=check_in,
-        check_out_date=check_out,
-        total_price=total_price
-    )
+    property_id=data['property_id'],
+    guest_name=current_user.name,    #
+    guest_email=current_user.email,  
+    check_in_date=check_in,
+    check_out_date=check_out,
+    total_price=total_price
+)
     
     db.session.add(booking)
     db.session.commit()
@@ -141,6 +147,7 @@ def update_property(id):
 
 # Bookings CRUD
 @app.route('/api/bookings', methods=['GET'])
+@jwt_required()  
 def get_bookings():
     try:
         bookings = Booking.query.all()
@@ -520,6 +527,64 @@ def get_owner_properties(owner_id):
     properties = Property.query.filter_by(owner_id=owner_id).all()
     return [property.to_dict() for property in properties]
 
+@app.route('/api/bookings/<int:booking_id>/cancel', methods=['PUT'])
+@jwt_required()
+def cancel_booking(booking_id):
+    try:
+        current_user_id = get_jwt_identity()
+        current_user = User.query.get(current_user_id)
+        if not current_user:
+            return {"error": "User not found"}, 401
+        
+        booking = Booking.query.get(booking_id)
+        if not booking:
+            return {"error": "Booking not found"}, 404
+            
+        # Check if user owns this booking
+        if booking.guest_email != current_user.email:
+            return {"error": "Unauthorized"}, 403
+            
+        booking.booking_status = "cancelled"
+        db.session.commit()
+        
+        return booking.to_dict(), 200
+    except Exception as e:
+        return {"error": str(e)}, 500
+    # Get bookings for current user (guest reservations)
+@app.route('/api/user/bookings', methods=['GET'])
+@jwt_required()
+def get_user_bookings():
+    try:
+        current_user_id = get_jwt_identity()
+        current_user = User.query.get(current_user_id)
+        if not current_user:
+            return {"error": "User not found"}, 401
+            
+        # Return bookings where guest_email matches current user
+        bookings = Booking.query.filter_by(guest_email=current_user.email).all()
+        return [booking.to_dict() for booking in bookings]
+    except Exception as e:
+        return {"error": str(e)}, 500
+
+# Get bookings for owner's properties
+@app.route('/api/owner/bookings', methods=['GET'])
+@jwt_required()
+def get_owner_bookings():
+    try:
+        current_user_id = get_jwt_identity()
+        current_user = User.query.get(current_user_id)
+        if not current_user or current_user.user_type != 'owner':
+            return {"error": "Owner access required"}, 403
+            
+        # Get all properties owned by current user
+        owner_properties = Property.query.filter_by(owner_id=current_user_id).all()
+        property_ids = [p.id for p in owner_properties]
+        
+        # Get all bookings for those properties
+        bookings = Booking.query.filter(Booking.property_id.in_(property_ids)).all()
+        return [booking.to_dict() for booking in bookings]
+    except Exception as e:
+        return {"error": str(e)}, 500
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
 
