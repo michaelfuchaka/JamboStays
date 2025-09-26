@@ -1,20 +1,10 @@
-# Core Flask packages
 Flask==3.0.0
 flask-cors==4.0.0
 flask-migrate==4.0.5
 flask-restful==0.3.10
 flask-sqlalchemy==3.1.1
 flask-jwt-extended==4.6.0
-
-# Database - ONLY psycopg3 (remove any psycopg2 references)
-psycopg[binary]==3.1.19
-
-# SQLAlchemy
+psycopg[binary]==3.2.10
 sqlalchemy==2.0.23
-
-# Other dependencies
 werkzeug==3.0.1
 gunicorn==21.2.0
-
-# Add any other dependencies your app needs, but make sure
-# there's NO psycopg2 or psycopg2-binary anywhere in this file
