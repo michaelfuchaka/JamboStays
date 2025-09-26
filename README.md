@@ -1,4 +1,4 @@
-# Luxury Property Rental Platform
+# JamboStays Property Rental Platform
 
 A full-stack property rental platform built with React and Flask, designed for seamless property booking experiences with role-based access for property owners and guests.
 
@@ -276,7 +276,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 📧 Contact
 
-For questions or support, please contact: juliuskedienye61@gmail.com,fuchakamichael06@gmail.com
+For questions or support, please contact: juliuskedienye61@gmail.com,fuchakamichael06@gmail.com, bonfasogaro@gmail.com
 
 ## 🙏 Acknowledgments
 
