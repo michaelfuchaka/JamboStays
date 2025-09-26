@@ -3,6 +3,7 @@ import Footer from '../components/Footer';
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import api from "../services/api";
 
 const UserDashboard = () => {
   const [properties, setProperties] = useState([]);
@@ -15,10 +16,27 @@ const UserDashboard = () => {
   const [filterBy, setFilterBy] = useState("all");
   const [sortBy, setSortBy] = useState("name");
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+ 
 
+useEffect(() => {
+  const checkUserAccess = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setError("Please log in to view your dashboard.");
+        setLoading(false); // Stop loading
+        return;
+      }
+      // If token exists, proceed with data fetching
+      fetchData();
+    } catch (err) {
+      setError("Authentication failed.");
+      setLoading(false);
+    }
+  };
+  
+  checkUserAccess();
+}, []);
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -35,21 +53,49 @@ const UserDashboard = () => {
   };
 
   const fetchProperties = async () => {
-    try {
-      const res = await axios.get("/api/properties");
-      setProperties(res.data);
-    } catch (err) {
-      console.error("Failed to load properties:", err);
-    }
-  };
+  try {
+    console.log("🔍 Attempting to fetch properties...");
+    console.log("📡 API base URL:", api.defaults.baseURL);
 
-  const fetchBookings = async () => {
-    try {
+    const res = await api.get("/properties"); // Use your api service
+
+        console.log("✅ Properties response status:", res.status);
+    console.log("📦 Properties data:", res.data);
+    console.log("📊 Number of properties:", res.data?.length);
+
+    setProperties(res.data);
+  } catch (err) {
+     console.error("❌ Failed to load properties - Full error:", err);
+    console.error("🔥 Error response:", err.response?.data);
+    console.error("📊 Error status:", err.response?.status);
+    console.error("💬 Error message:", err.message);
+    console.error("Failed to load properties:", err);
+    setError("Failed to load properties. Please try again.");
+  }
+};
+const fetchBookings = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    
+    // Get bookings for current user only
+    const res = await api.get("/user/bookings", {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    
+    setBookings(res.data);
+  } catch (err) {
+    console.error("Failed to load bookings:", err);
+    if (err.response?.status === 404) {
+      console.log("Bookings endpoint not found - setting empty bookings");
       setBookings([]);
-    } catch (err) {
-      console.error("Failed to load bookings:", err);
+    } else if (err.response?.status === 401) {
+      console.log("Unauthorized access to bookings");
+      setBookings([]);
+    } else {
+      setError("Failed to load bookings. Please try again.");
     }
-  };
+  }
+};
 
   const fetchFavorites = async () => {
     try {
@@ -79,6 +125,11 @@ const UserDashboard = () => {
     }
 
 try {
+  const token = localStorage.getItem('token');
+  await api.put(`/bookings/${bookingId}/cancel`, {}, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  
   setBookings(bookings.map(booking => 
     booking.id === bookingId 
       ? { ...booking, booking_status: "cancelled" }
@@ -87,6 +138,7 @@ try {
 } catch (err) {
   setError("Failed to cancel booking. Please try again.");
 }
+
   };
 
   const getFilteredProperties = () => {
@@ -153,7 +205,7 @@ return filtered;
   };
 
   if (loading) {
-    return (
+     return (
       <div className="loading-container">
         <div className="loading-content">
           <div className="luxury-spinner"></div>
