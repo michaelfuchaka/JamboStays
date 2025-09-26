@@ -1238,12 +1238,12 @@ body {
 .booking-property-name {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #f5f5dc;
+  color: #1f2937;
   margin: 0 0 0.5rem 0;
 }
 
 .booking-location {
-  color: #f5f5dc;
+  color: #6b7280;;
   font-size: 0.9rem;
 }
 
@@ -1272,12 +1272,12 @@ body {
 
 .guest-name {
   font-weight: 600;
-  color: #f5f5dc;
+  color: #111827;
   margin-bottom: 0.25rem;
 }
 
 .guest-email {
-  color: #f5f5dc;
+  color:#6b7280;
   font-size: 0.9rem;
 }
 
@@ -1300,13 +1300,13 @@ body {
 
 .date-label {
   font-size: 0.8rem;
-  color: #f5f5dc;
+  color: #6b7280;
   margin-bottom: 0.25rem;
 }
 
 .date-value {
   font-weight: 600;
-  color: #f5f5dc;
+  color: #111827;
 }
 
 .date-separator {
@@ -1316,7 +1316,7 @@ body {
 
 .nights-info {
   font-size: 0.9rem;
-  color: #f5f5dc;
+  color: #6b7280;
   text-align: center;
 }
 
@@ -1340,12 +1340,12 @@ body {
 .price-amount {
  font-size: 1.5rem;
   font-weight: 700;
-  color: #f5f5dc; 
+  color: #111827; 
 }
 
 .price-label {
   font-size: 0.8rem;
-  color: #f5f5dc;
+  color: #6b7280;
 }
 
 .booking-timing {
