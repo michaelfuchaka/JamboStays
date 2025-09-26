@@ -1,10 +1,21 @@
+# Core Flask packages
 Flask==3.0.0
 flask-cors==4.0.0
 flask-migrate==4.0.5
 flask-restful==0.3.10
 flask-sqlalchemy==3.1.1
 flask-jwt-extended==4.6.0
+
+# Database - ONLY psycopg3
 psycopg[binary]==3.2.10
+
+# Force SQLAlchemy to use compatible version
 sqlalchemy==2.0.23
+sqlalchemy-serializer==1.4.1
+
+# Other dependencies
 werkzeug==3.0.1
 gunicorn==21.2.0
+
+# Add this to explicitly prevent psycopg2
+--no-binary psycopg2
