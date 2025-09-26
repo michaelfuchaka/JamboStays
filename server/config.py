@@ -16,11 +16,23 @@ from flask_jwt_extended import JWTManager
 # Instantiate app, set attributes
 app = Flask(__name__)
 # AFTER (for psycopg3)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL") or "sqlite:///jambostays.db"
-if app.config['SQLALCHEMY_DATABASE_URI'] and app.config['SQLALCHEMY_DATABASE_URI'].startswith('postgres://'):
-    app.config['SQLALCHEMY_DATABASE_URI'] = app.config['SQLALCHEMY_DATABASE_URI'].replace('postgres://', 'postgresql+psycopg://')
-elif app.config['SQLALCHEMY_DATABASE_URI'] and app.config['SQLALCHEMY_DATABASE_URI'].startswith('postgresql://'):
-    app.config['SQLALCHEMY_DATABASE_URI'] = app.config['SQLALCHEMY_DATABASE_URI'].replace('postgresql://', 'postgresql+psycopg://')
+# Get the database URL from environment
+database_url = os.environ.get("DATABASE_URL") or "sqlite:///jambostays.db"
+
+# CRITICAL: Force psycopg3 dialect for ALL PostgreSQL connections
+if database_url.startswith(('postgres://', 'postgresql://')):
+    # Extract the connection details
+    if database_url.startswith('postgres://'):
+        connection_string = database_url[11:]  # Remove 'postgres://'
+    else:
+        connection_string = database_url[13:]  # Remove 'postgresql://'
+    
+    # Force psycopg3 dialect
+    database_url = f"postgresql+psycopg://{connection_string}"
+
+print(f"DEBUG: Final database URL: {database_url}")  # Debug line - remove in production
+
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.json.compact = False
 app.config['JWT_SECRET_KEY'] = os.environ.get("JWT_SECRET_KEY") or "fallback-secret-change-in-production"
