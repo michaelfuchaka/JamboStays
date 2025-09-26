@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import BookingForm from '../components/BookingForm.js'
+import BookingForm from '../components/BookingForm'
 import axios from 'axios'
 
 const PropertyDetails = () => {
