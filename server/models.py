@@ -113,3 +113,25 @@ class User(db.Model, SerializerMixin):
     
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)        
+class Favorite(db.Model):
+    __tablename__ = 'favorites'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    property_id = db.Column(db.Integer, db.ForeignKey('properties.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    user = db.relationship('User', backref=db.backref('favorites', lazy=True))
+    property = db.relationship('Property', backref=db.backref('favorited_by', lazy=True))
+    
+    # Ensure a user can't favorite the same property twice
+    __table_args__ = (db.UniqueConstraint('user_id', 'property_id', name='unique_user_property_favorite'),)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'property_id': self.property_id,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }

@@ -99,25 +99,45 @@ const fetchBookings = async () => {
 
   const fetchFavorites = async () => {
     try {
+      const token = localStorage.getItem('token');
+    const res = await api.get("/user/favorites", {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    setFavorites(res.data);
+  } catch (err) {
+    console.error("Failed to load favorites:", err);
+    if (err.response?.status === 404) {
       setFavorites([]);
-    } catch (err) {
-      console.error("Failed to load favorites:", err);
     }
-  };
+  }
+};
 
   const toggleFavorite = async (propertyId) => {
-    try {
-      const isFavorite = favorites.some(fav => fav.property_id === propertyId);
+  try {
+    const token = localStorage.getItem('token');
+    const isFavorite = favorites.some(fav => fav.property_id === propertyId);
 
-      if (isFavorite) {
-        setFavorites(favorites.filter(fav => fav.property_id !== propertyId));
-      } else {
-        setFavorites([...favorites, { property_id: propertyId, id: Date.now() }]);
-      }
-    } catch (err) {
-      setError("Failed to update favorites. Please try again.");
+    if (isFavorite) {
+      // Remove from favorites
+      await api.delete(`/user/favorites/${propertyId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setFavorites(favorites.filter(fav => fav.property_id !== propertyId));
+    } else {
+      // Add to favorites
+      const res = await api.post("/user/favorites", 
+        { property_id: propertyId }, 
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      setFavorites([...favorites, res.data]);
     }
-  };
+  } catch (err) {
+    console.error("Failed to update favorites:", err);
+    setError("Failed to update favorites. Please try again.");
+  }
+};
 
   const cancelBooking = async (bookingId) => {
     if (!window.confirm("Are you sure you want to cancel this booking?")) {

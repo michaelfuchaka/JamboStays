@@ -11,7 +11,7 @@ import os
 import uuid
 import re
 from datetime import datetime
-from models import Owner, Property, Booking, PropertyImage, User  # Add User here
+from models import Owner, Property, Booking, PropertyImage, User ,Favorite # Add User here
 from werkzeug.utils import secure_filename
 from config import allowed_file
 from models import PropertyImage
@@ -585,6 +585,92 @@ def get_owner_bookings():
         return [booking.to_dict() for booking in bookings]
     except Exception as e:
         return {"error": str(e)}, 500
+
+# Get user favorites
+@app.route('/api/user/favorites', methods=['GET'])
+@jwt_required()
+def get_user_favorites():
+    try:
+        current_user_id = get_jwt_identity()
+        current_user = User.query.get(current_user_id)
+        if not current_user:
+            return {"error": "User not found"}, 401
+        
+        favorites = Favorite.query.filter_by(user_id=current_user_id).all()
+        return [fav.to_dict() for fav in favorites]
+    except Exception as e:
+        return {"error": str(e)}, 500
+
+# Add property to favorites  
+@app.route('/api/user/favorites', methods=['POST'])
+@jwt_required()
+def add_favorite():
+    try:
+        current_user_id = get_jwt_identity()
+        current_user = User.query.get(current_user_id)
+        if not current_user:
+            return {"error": "User not found"}, 401
+            
+        data = request.get_json()
+        property_id = data.get('property_id')
+        
+        if not property_id:
+            return {"error": "Property ID is required"}, 400
+            
+        # Check if property exists
+        property = Property.query.get(property_id)
+        if not property:
+            return {"error": "Property not found"}, 404
+            
+        # Check if already favorited
+        existing_favorite = Favorite.query.filter_by(
+            user_id=current_user_id, 
+            property_id=property_id
+        ).first()
+        
+        if existing_favorite:
+            return {"error": "Property already in favorites"}, 400
+            
+        # Create new favorite
+        favorite = Favorite(
+            user_id=current_user_id,
+            property_id=property_id
+        )
+        
+        db.session.add(favorite)
+        db.session.commit()
+        
+        return favorite.to_dict(), 201
+    except Exception as e:
+        db.session.rollback()
+        return {"error": str(e)}, 500
+
+# Remove property from favorites
+@app.route('/api/user/favorites/<int:property_id>', methods=['DELETE'])
+@jwt_required()
+def remove_favorite(property_id):
+    try:
+        current_user_id = get_jwt_identity()
+        current_user = User.query.get(current_user_id)
+        if not current_user:
+            return {"error": "User not found"}, 401
+            
+        favorite = Favorite.query.filter_by(
+            user_id=current_user_id, 
+            property_id=property_id
+        ).first()
+        
+        if not favorite:
+            return {"error": "Favorite not found"}, 404
+            
+        db.session.delete(favorite)
+        db.session.commit()
+        
+        return {"message": "Favorite removed successfully"}, 200
+    except Exception as e:
+        db.session.rollback()
+        return {"error": str(e)}, 500
+
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
 
