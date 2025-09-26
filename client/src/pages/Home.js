@@ -29,7 +29,7 @@ function Home() {
     <div  className="homepage">
       <div className="hero-section" 
       style={{
-      backgroundImage: 'url("https://images.unsplash.com/photo-1515263487990-61b07816b324?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&fit=crop")',
+      backgroundImage: 'url("https://images.unsplash.com/photo-1723110994499-df46435aa4b3?q=80&w=879&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")',
       backgroundSize: 'cover',
       backgroundPosition: 'center',
        backgroundRepeat: 'no-repeat'}}>
