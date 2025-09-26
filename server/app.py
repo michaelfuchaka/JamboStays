@@ -467,6 +467,58 @@ def handle_unprocessable_entity(e):
 def handle_unauthorized(e):
     return jsonify({'error': 'Token is invalid or expired'}), 401
 
+@app.route('/api/properties/<int:id>', methods=['DELETE'])
+def delete_property(id):
+    property = Property.query.get(id)
+    if not property:
+        return {"error": "Property not found"}, 404
+    
+    
+    for image in property.images:
+        # Delete physical files if they exist
+        file_path = os.path.join('uploads/properties', str(property.id), image.image_name)
+        if os.path.exists(file_path):
+            os.remove(file_path)
+    
+    db.session.delete(property)
+    db.session.commit()
+    return {"message": "Property deleted successfully"}, 200
+
+@app.route('/api/properties/<int:property_id>/images/url', methods=['POST'])
+def add_property_image_url(property_id):
+    property = Property.query.get(property_id)
+    if not property:
+        return {"error": "Property not found"}, 404
+    
+    data = request.get_json()
+    if not data or 'image_url' not in data:
+        return {"error": "Image URL is required"}, 400
+    
+    property_image = PropertyImage(
+        property_id=property_id,
+        image_url=data['image_url'],
+        image_name=data.get('image_name', 'custom_image.jpg'),
+        is_featured=data.get('is_featured', False),
+        upload_order=data.get('upload_order', 0)
+    )
+    
+    db.session.add(property_image)
+    db.session.commit()
+    
+    return property_image.to_dict(), 201
+
+@app.route('/api/owners/<int:owner_id>/properties', methods=['GET'])
+@jwt_required()
+def get_owner_properties(owner_id):
+    current_user_id = get_jwt_identity()
+    
+    
+    # Make sure user can only access their own properties
+    if current_user_id != owner_id:
+        return {"error": "Unauthorized access"}, 403
+    
+    properties = Property.query.filter_by(owner_id=owner_id).all()
+    return [property.to_dict() for property in properties]
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
