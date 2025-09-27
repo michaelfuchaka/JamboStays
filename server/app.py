@@ -16,6 +16,9 @@ from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identi
 from flask_cors import CORS
 from config import app, db, api, allowed_file
 from models import Owner, Property, Booking,PropertyImage, User
+
+CORS(app, resources={r"/api/*": {"origins": "https://jambo-stays1.vercel.app"}}, supports_credentials=True)
+
 # Add this route after your imports:
 @app.route('/health')
 def health_check():
