@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:5555/api", 
+  baseURL: "https://jambostays-backend-v2.onrender.com/api", 
   headers: {
     'Content-Type': 'application/json',
   },
