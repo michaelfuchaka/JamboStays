@@ -1,0 +1,28 @@
+# Ignore server files
+server/
+*.py
+Pipfile
+Pipfile.lock
+requirements.txt
+runtime.txt
+
+# Ignore development files
+.git/
+.github/
+node_modules/
+*.log
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Ignore build artifacts (we want Vercel to build fresh)
+client/build/
+client/node_modules/
+
+# Keep only client source and config
+!client/
+!client/package.json
+!client/src/
+!client/public/
+!vercel.json

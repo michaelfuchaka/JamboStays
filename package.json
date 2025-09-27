@@ -1,9 +1,13 @@
-
 {
-  "dependencies": {
-    "axios": "^1.12.2",
-    "formik": "^2.4.6",
-    "react-router-dom": "^6.30.1",
-    "yup": "^1.7.1"
+  "name": "jambo-stays",
+  "version": "1.0.0",
+  "description": "JamboStays - Property rental platform",
+  "scripts": {
+    "build": "cd client && npm install && npm run build",
+    "start": "cd client && npm start",
+    "dev": "cd client && npm start"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
