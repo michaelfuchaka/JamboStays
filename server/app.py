@@ -29,6 +29,13 @@ def api_health_check():
         return {'status': 'healthy', 'message': 'JamboStays API and database are running'}, 200
     except Exception as e:
         return {'status': 'unhealthy', 'message': f'Database connection failed: {str(e)}'}, 500
+
+# Add request logging middleware
+@app.before_request
+def log_request_info():
+    if request.endpoint == 'get_profile':
+        print(f"DEBUG: Profile request - Headers: {dict(request.headers)}")
+        print(f"DEBUG: Profile request - Authorization: {request.headers.get('Authorization', 'None')}")
     
 
 CORS(app, origins='*', credentials=True, methods=['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'])
@@ -411,10 +418,15 @@ def logout():
 def get_profile():
     try:
         current_user_id = get_jwt_identity()
+        print(f"DEBUG: Current user ID from JWT: {current_user_id}")  # Debug logging
+        
         current_user = User.query.get(current_user_id)
         
         if not current_user:
+            print(f"DEBUG: User not found for ID: {current_user_id}")  # Debug logging
             return jsonify({'error': 'User not found'}), 404
+        
+        print(f"DEBUG: Found user: {current_user.email}, type: {current_user.user_type}")  # Debug logging
         
         return jsonify({
             'user': {
@@ -427,7 +439,8 @@ def get_profile():
         }), 200
         
     except Exception as e:
-        return jsonify({'error': 'Failed to get profile'}), 500
+        print(f"DEBUG: Profile error: {str(e)}")  # Debug logging
+        return jsonify({'error': f'Failed to get profile: {str(e)}'}), 500
 
 # Update User Profile Route
 @app.route('/api/profile', methods=['PUT'])
@@ -479,10 +492,12 @@ def update_profile():
 # Error handler for JWT errors
 @app.errorhandler(422)
 def handle_unprocessable_entity(e):
-    return jsonify({'error': 'Invalid token format'}), 422
+    print(f"DEBUG: 422 JWT Error: {str(e)}")  # Debug logging
+    return jsonify({'error': 'Invalid token format or malformed JWT'}), 422
 
 @app.errorhandler(401)
 def handle_unauthorized(e):
+    print(f"DEBUG: 401 JWT Error: {str(e)}")  # Debug logging
     return jsonify({'error': 'Token is invalid or expired'}), 401
 
 @app.route('/api/properties/<int:id>', methods=['DELETE'])
