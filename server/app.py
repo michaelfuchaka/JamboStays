@@ -710,7 +710,9 @@ def get_available_properties():
 
 def init_db():
     with app.app_context():
-        db.create_all()    
+        db.drop_all()  # Drop all existing tables
+        db.create_all()  # Recreate with new schema
+        print("Database tables recreated with updated schema!")    
 
 if __name__ == '__main__':
       init_db()
