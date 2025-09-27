@@ -47,7 +47,7 @@ from flask import request
 
 @app.route("/api/properties", methods=["POST"])
 @jwt_required()
-def create_property():
+def creat_property():
     print("📦 Incoming property data:", request.json)  
     ...
 
