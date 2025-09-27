@@ -20,10 +20,11 @@ function App() {
     // Check if user is logged in on app load
     const token = localStorage.getItem('token');
     const userData = localStorage.getItem('user');
-    
     if (token && userData) {
-      setUser(JSON.parse(userData));
-    }
+  setUser(JSON.parse(userData));
+  api.defaults.headers.common["Authorization"] = `Bearer ${token}`; // ✅ restore header
+}
+
     setLoading(false);
   }, []);
 const login = (userData, token) => {
