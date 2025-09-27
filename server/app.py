@@ -20,21 +20,27 @@ from models import Owner, Property, Booking,PropertyImage, User
 @app.route('/health')
 def health_check():
     return {'status': 'healthy', 'message': 'JamboStays API is running'}, 200
+
+@app.route('/api/health')
+def api_health_check():
+    try:
+        # Test database connection
+        db.session.execute('SELECT 1')
+        return {'status': 'healthy', 'message': 'JamboStays API and database are running'}, 200
+    except Exception as e:
+        return {'status': 'unhealthy', 'message': f'Database connection failed: {str(e)}'}, 500
     
 
-CORS(app, origins=[
-    'https://jambo-stays1.vercel.app',
-    'https://jambo-stays1-git-main-michael-fuchakas-projects.vercel.app',
-    'https://jambo-stays1-47a14cgqg-michael-fuchakas-projects.vercel.app',
-    'http://localhost:3000',  # For local development
-    'http://127.0.0.1:3000'   # For local development
-], credentials=True, methods=['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'])
+CORS(app, origins='*', credentials=True, methods=['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'])
 
 
 @app.route('/api/properties', methods=['GET'])
 def get_properties():
-    properties = Property.query.all()
-    return [property.to_dict() for property in properties]
+    try:
+        properties = Property.query.all()
+        return [property.to_dict() for property in properties]
+    except Exception as e:
+        return {'error': f'Database error: {str(e)}'}, 500
 
 
 @app.route('/api/properties/<int:id>', methods=['GET'])
@@ -320,8 +326,9 @@ def register():
         }), 201
         
     except Exception as e:
+        print(f"Registration error: {str(e)}")  # Debug logging
         db.session.rollback()
-        return jsonify({'error': 'Registration failed. Please try again.'}), 500
+        return jsonify({'error': f'Registration failed: {str(e)}'}), 500
 
 @app.route('/api/login', methods=['POST'])
 def login():
@@ -362,7 +369,8 @@ def login():
         }), 200
         
     except Exception as e:
-        return jsonify({'error': 'Login failed. Please try again.'}), 500
+        print(f"Login error: {str(e)}")  # Debug logging
+        return jsonify({'error': f'Login failed: {str(e)}'}), 500
 @app.route('/api/verify', methods=['GET'])
 @jwt_required()
 def verify():
