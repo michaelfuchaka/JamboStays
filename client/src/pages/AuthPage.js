@@ -1,5 +1,4 @@
 
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom"; 
 import { useAuth } from "../components/App"
@@ -71,7 +70,7 @@ function AuthPage() {
     setLoading(true);
     setError("");
    try {
-      const endpoint = isLogin ? "/api/login" : "/api/register";
+      const endpoint = isLogin ? "/login" : "/register";
       const payload = isLogin 
         ? {
             email: formData.email,
@@ -84,10 +83,10 @@ function AuthPage() {
             user_type: formData.userType
           };
 
-      console.log("Making request to:", `http://127.0.0.1:5555${endpoint}`);
+      console.log("Making request to:", `https://jambostays-backend-v2.onrender.com/api${endpoint}`);
       console.log("Payload:", payload);
 
-      const response = await fetch(`http://127.0.0.1:5555${endpoint}`, {
+      const response = await fetch(`https://jambostays-backend-v2.onrender.com/api${endpoint}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -115,7 +114,7 @@ function AuthPage() {
     }
     catch (error) {
       console.error("Auth error:", error);
-      setError(`Network error: ${error.message}. Please check if the backend server is running on port 5555.`);
+      setError(`Network error: ${error.message}. Please try again.`);
     } finally {
       setLoading(false);
     }
