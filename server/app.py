@@ -33,6 +33,15 @@ def api_health_check():
     except Exception as e:
         return {'status': 'unhealthy', 'message': f'Database connection failed: {str(e)}'}, 500
 
+@app.route('/api/test-jwt', methods=['GET'])
+@jwt_required()
+def test_jwt():
+    try:
+        current_user_id = get_jwt_identity()
+        return {'message': 'JWT is working', 'user_id': current_user_id}, 200
+    except Exception as e:
+        return {'error': f'JWT test failed: {str(e)}'}, 500
+
 # Add request logging middleware
 @app.before_request
 def log_request_info():
@@ -45,11 +54,7 @@ CORS(app, origins='*', credentials=True, methods=['GET', 'POST', 'PUT', 'DELETE'
 
 from flask import request
 
-@app.route("/api/properties", methods=["POST"])
-@jwt_required()
-def creat_property():
-    print("📦 Incoming property data:", request.json)  
-    ...
+# Removed duplicate property creation route
 
 
 @app.route('/api/properties', methods=['GET'])
@@ -137,27 +142,35 @@ def create_owner():
 
 # Complete Properties CRUD
 @app.route('/api/properties', methods=['POST'])
+@jwt_required()
 def create_property():
-    data = request.get_json()
-    
-    required_fields = ['name', 'description', 'location', 'price_per_night', 'max_guests', 'owner_id']
-    if not all(k in data for k in required_fields):
-        return {"error": "Missing required fields"}, 400
-    
-    property = Property(
-        name=data['name'],
-        description=data['description'],
-        location=data['location'],
-        price_per_night=data['price_per_night'],
-        max_guests=data['max_guests'],
-        amenities=data.get('amenities', ''),
-        owner_id=data['owner_id']
-    )
-    
-    db.session.add(property)
-    db.session.commit()
-    
-    return property.to_dict(), 201
+    try:
+        data = request.get_json()
+        current_user_id = get_jwt_identity()
+        
+        # Validate required fields (remove owner_id since we'll use current user)
+        required_fields = ['name', 'description', 'location', 'price_per_night', 'max_guests']
+        if not all(k in data for k in required_fields):
+            return {"error": "Missing required fields"}, 400
+        
+        # Create property with current user as owner
+        property = Property(
+            name=data['name'],
+            description=data['description'],
+            location=data['location'],
+            price_per_night=data['price_per_night'],
+            max_guests=data['max_guests'],
+            amenities=data.get('amenities', ''),
+            owner_id=current_user_id  # Use current user's ID
+        )
+        
+        db.session.add(property)
+        db.session.commit()
+        
+        return property.to_dict(), 201
+    except Exception as e:
+        db.session.rollback()
+        return {"error": f"Failed to create property: {str(e)}"}, 500
 
 @app.route('/api/properties/<int:id>', methods=['PATCH'])
 def update_property(id):

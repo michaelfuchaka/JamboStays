@@ -10,7 +10,6 @@ const PropertyForm = ({ property, onSave, onCancel }) => {
     price_per_night: property?.price_per_night || '',
     max_guests: property?.max_guests || '',
     amenities: property?.amenities || '',
-    owner_id: property?.owner_id || 1,
     image_urls: property?.images?.map(img => img.image_url).join('\n') || '' // Add image URLs
   });
 
@@ -27,8 +26,7 @@ const PropertyForm = ({ property, onSave, onCancel }) => {
           location: formData.location,
           price_per_night: parseFloat(formData.price_per_night),
           max_guests: parseInt(formData.max_guests),
-          amenities: formData.amenities,
-          owner_id: formData.owner_id
+          amenities: formData.amenities
         });
         savedProperty = res.data;
       } else {
@@ -39,8 +37,7 @@ const PropertyForm = ({ property, onSave, onCancel }) => {
           location: formData.location,
           price_per_night: parseFloat(formData.price_per_night),
           max_guests: parseInt(formData.max_guests),
-          amenities: formData.amenities,
-          owner_id: formData.owner_id
+          amenities: formData.amenities
         });
         savedProperty = res.data;
       }
