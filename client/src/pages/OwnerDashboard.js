@@ -156,9 +156,7 @@ useEffect(() => {
   const checkUserType = async () => {
     try {
       const token = localStorage.getItem('token');
-      const userResponse = await api.get('/profile', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const userResponse = await api.get('/profile');
       
       if (userResponse.data.user.user_type !== 'owner') {
         setError("Access denied. Owner privileges required.");
@@ -187,9 +185,7 @@ const fetchProperties = async () => {
   try {
     // Get current user info
     const token = localStorage.getItem('token');
-    const userResponse = await api.get('/profile', {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    const userResponse = await api.get('/profile');
     const currentUser = userResponse.data.user;
     
 
