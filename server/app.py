@@ -40,6 +40,14 @@ def log_request_info():
 
 CORS(app, origins='*', credentials=True, methods=['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'])
 
+from flask import request
+
+@app.route("/api/properties", methods=["POST"])
+@jwt_required()
+def create_property():
+    print("📦 Incoming property data:", request.json)  
+    ...
+
 
 @app.route('/api/properties', methods=['GET'])
 def get_properties():
