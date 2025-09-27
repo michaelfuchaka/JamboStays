@@ -20,8 +20,15 @@ from models import Owner, Property, Booking,PropertyImage, User
 @app.route('/health')
 def health_check():
     return {'status': 'healthy', 'message': 'JamboStays API is running'}, 200
+    
 
-CORS(app) 
+CORS(app, origins=[
+    'https://jambo-stays1.vercel.app',
+    'https://jambo-stays1-git-main-michael-fuchakas-projects.vercel.app',
+    'https://jambo-stays1-47a14cgqg-michael-fuchakas-projects.vercel.app',
+    'http://localhost:3000',  # For local development
+    'http://127.0.0.1:3000'   # For local development
+], credentials=True, methods=['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'])
 
 
 @app.route('/api/properties', methods=['GET'])
