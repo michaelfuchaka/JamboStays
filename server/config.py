@@ -1,4 +1,3 @@
-
 # Remote library imports
 from datetime import timedelta
 import os
@@ -15,19 +14,16 @@ from flask_jwt_extended import JWTManager
 
 # Instantiate app, set attributes
 app = Flask(__name__)
-# AFTER (for psycopg3)
-# Get the database URL from environment
+
+# Database configuration
 database_url = os.environ.get("DATABASE_URL") or "sqlite:///jambostays.db"
 
 # CRITICAL: Force psycopg3 dialect for ALL PostgreSQL connections
 if database_url.startswith(('postgres://', 'postgresql://')):
-    # Extract the connection details
     if database_url.startswith('postgres://'):
-        connection_string = database_url[11:]  # Remove 'postgres://'
+        connection_string = database_url[11:]
     else:
-        connection_string = database_url[13:]  # Remove 'postgresql://'
-    
-    # Force psycopg3 dialect
+        connection_string = database_url[13:]
     database_url = f"postgresql+psycopg://{connection_string}"
 
 print(f"DEBUG: Final database URL: {database_url}")  # Debug line - remove in production
@@ -35,10 +31,17 @@ print(f"DEBUG: Final database URL: {database_url}")  # Debug line - remove in pr
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.json.compact = False
+
+# JWT / session / cookies
 app.config['JWT_SECRET_KEY'] = os.environ.get("JWT_SECRET_KEY") or "fallback-secret-change-in-production"
-# Add this line:
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=24)
+
+# Important for Vercel <-> Render cookies
+app.config['SESSION_COOKIE_SAMESITE'] = "None"
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['JWT_COOKIE_SAMESITE'] = "None"
+app.config['JWT_COOKIE_SECURE'] = True
 
 jwt = JWTManager(app)
 
