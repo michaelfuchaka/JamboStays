@@ -7,6 +7,7 @@ import OwnerDashboard from "../pages/OwnerDashboard";
 import UserDashboard from "../pages/UserDashboard";
 import AuthPage from "../pages/AuthPage"; // ✅ Import AuthPage
 import Footer from './Footer'
+import api from "../services/api";
 // Create Authentication Context
 const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
@@ -25,18 +26,24 @@ function App() {
     }
     setLoading(false);
   }, []);
+const login = (userData, token) => {
+  localStorage.setItem('token', token);
+  localStorage.setItem('user', JSON.stringify(userData));
+  setUser(userData);
 
-  const login = (userData, token) => {
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(userData));
-    setUser(userData);
-  };
+  // ⬅️ attach token to axios immediately
+  api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+};
 
   const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setUser(null);
-  };
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  setUser(null);
+
+  // ⬅️ remove auth header from axios
+  delete api.defaults.headers.common["Authorization"];
+};
+
 
   if (loading) {
     return <div>Loading...</div>;

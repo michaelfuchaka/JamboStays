@@ -100,7 +100,7 @@ function AuthPage() {
 
       if (response.ok) {
  
-  login(data.user, data.access_token);
+login(data.user, data.access_token);
   
   
      if (data.user.user_type === "owner") {
