@@ -1,11 +1,9 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom"; 
-import { useAuth } from "../components/App"
+import { useAuth } from "../components/App";
 
 function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
-
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -19,7 +17,6 @@ function AuthPage() {
   const navigate = useNavigate(); 
   const { login } = useAuth();
 
-  
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -61,7 +58,6 @@ function AuthPage() {
     return true;
   };
 
-  
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -69,7 +65,8 @@ function AuthPage() {
 
     setLoading(true);
     setError("");
-   try {
+    
+    try {
       const endpoint = isLogin ? "/login" : "/register";
       const payload = isLogin 
         ? {
@@ -80,7 +77,7 @@ function AuthPage() {
             email: formData.email,
             password: formData.password,
             name: formData.name,
-            user_type: formData.userType
+            user_type: formData.userType  // FIXED: Send as user_type not userType
           };
 
       console.log("Making request to:", `https://jambostays-backend-v2.onrender.com/api${endpoint}`);
@@ -99,22 +96,22 @@ function AuthPage() {
       console.log("Response data:", data);
 
       if (response.ok) {
- 
-login(data.user, data.access_token);
-  
-  
-     if (data.user.user_type === "owner") {
-     navigate("/owner-dashboard");
-    } else {
-    navigate("/user-dashboard");
-   }
+        // FIXED: Store the token properly and call login with correct data
+        login(data.user, data.access_token);
+        
+        // Navigate based on user type
+        if (data.user.user_type === "owner") {
+          navigate("/owner-dashboard");
+        } else {
+          navigate("/user-dashboard");
+        }
       } else {
+        // Handle specific error messages from backend
         setError(data.error || "Authentication failed");
       }
-    }
-    catch (error) {
+    } catch (error) {
       console.error("Auth error:", error);
-      setError(`Network error: ${error.message}. Please try again.`);
+      setError(`Network error: ${error.message}. Please check your connection and try again.`);
     } finally {
       setLoading(false);
     }
@@ -175,6 +172,7 @@ login(data.user, data.access_token);
     fontSize: "0.9rem",
     cursor: "pointer",
   };
+
   const errorStyle = {
     color: "#ef4444",
     fontSize: "0.875rem",
@@ -185,7 +183,6 @@ login(data.user, data.access_token);
     border: "1px solid #fecaca",
   };
 
-  
   const selectStyle = {
     ...inputStyle,
     appearance: "none",
@@ -201,12 +198,9 @@ login(data.user, data.access_token);
       <div style={cardStyle}>
         <h2 style={titleStyle}>{isLogin ? "Sign In" : "Sign Up"}</h2>
         
-       
         {error && <div style={errorStyle}>{error}</div>}
         
-        
         <form onSubmit={handleSubmit}>
-          
           <input
             type="email"
             name="email"
@@ -228,7 +222,6 @@ login(data.user, data.access_token);
               required
             />
           )}
-          
           
           <input
             type="password"
@@ -252,7 +245,6 @@ login(data.user, data.access_token);
             />
           )}
           
-      
           {!isLogin && (
             <select
               name="userType"

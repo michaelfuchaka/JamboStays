@@ -140,15 +140,23 @@ def create_owner():
     
     return owner.to_dict(), 201
 
-# Complete Properties CRUD
+# FIXED: Complete Properties CRUD
 @app.route('/api/properties', methods=['POST'])
 @jwt_required()
 def create_property():
     try:
         data = request.get_json()
         current_user_id = get_jwt_identity()
+        current_user = User.query.get(current_user_id)
         
-        # Validate required fields (remove owner_id since we'll use current user)
+        # Check if user exists and is an owner
+        if not current_user:
+            return {"error": "User not found"}, 401
+            
+        if current_user.user_type != 'owner':
+            return {"error": "Only owners can create properties"}, 403
+        
+        # Validate required fields
         required_fields = ['name', 'description', 'location', 'price_per_night', 'max_guests']
         if not all(k in data for k in required_fields):
             return {"error": "Missing required fields"}, 400
@@ -158,10 +166,10 @@ def create_property():
             name=data['name'],
             description=data['description'],
             location=data['location'],
-            price_per_night=data['price_per_night'],
-            max_guests=data['max_guests'],
+            price_per_night=float(data['price_per_night']),
+            max_guests=int(data['max_guests']),
             amenities=data.get('amenities', ''),
-            owner_id=current_user_id  # Use current user's ID
+            owner_id=current_user_id  # Use current user's ID as owner
         )
         
         db.session.add(property)
@@ -170,20 +178,34 @@ def create_property():
         return property.to_dict(), 201
     except Exception as e:
         db.session.rollback()
+        print(f"Property creation error: {str(e)}")  # Debug logging
         return {"error": f"Failed to create property: {str(e)}"}, 500
 
 @app.route('/api/properties/<int:id>', methods=['PATCH'])
+@jwt_required()  # Add JWT requirement
 def update_property(id):
-    property = Property.query.get(id)
-    if not property:
-        return {"error": "Property not found"}, 404
-    
-    data = request.get_json()
-    
-    for key, value in data.items():
-        setattr(property, key, value)
-    db.session.commit()
-    return property.to_dict(), 200
+    try:
+        current_user_id = get_jwt_identity()
+        property = Property.query.get(id)
+        
+        if not property:
+            return {"error": "Property not found"}, 404
+            
+        # Check if user owns this property
+        if property.owner_id != current_user_id:
+            return {"error": "Unauthorized to update this property"}, 403
+        
+        data = request.get_json()
+        
+        for key, value in data.items():
+            if hasattr(property, key):  # Only update valid attributes
+                setattr(property, key, value)
+                
+        db.session.commit()
+        return property.to_dict(), 200
+    except Exception as e:
+        db.session.rollback()
+        return {"error": f"Failed to update property: {str(e)}"}, 500
 
 # Bookings CRUD
 @app.route('/api/bookings', methods=['GET'])
@@ -366,6 +388,7 @@ def login():
     try:
         # Get data from request
         data = request.get_json()
+        print(f"DEBUG: Login attempt with data: {data}")  # Debug logging
         
         # Validate required fields
         if not data:
@@ -377,15 +400,25 @@ def login():
         if not email or not password:
             return jsonify({'error': 'Email and password are required'}), 400
         
+        print(f"DEBUG: Looking for user with email: {email}")  # Debug logging
+        
         # Find user by email
         user = User.query.filter_by(email=email).first()
+        print(f"DEBUG: User found: {user is not None}")  # Debug logging
         
         # Check if user exists and password is correct
-        if not user or not user.check_password(password):
+        if not user:
+            print("DEBUG: User not found")  # Debug logging
+            return jsonify({'error': 'Invalid email or password'}), 401
+            
+        if not user.check_password(password):
+            print("DEBUG: Password check failed")  # Debug logging
             return jsonify({'error': 'Invalid email or password'}), 401
         
-        # Create access token
-        access_token = create_access_token(identity=user.id)
+        print(f"DEBUG: Login successful for user: {user.email}")  # Debug logging
+        
+        # Create access token with user ID as integer
+        access_token = create_access_token(identity=str(user.id))  # Convert to string
         
         # Return success response
         return jsonify({
@@ -402,17 +435,24 @@ def login():
     except Exception as e:
         print(f"Login error: {str(e)}")  # Debug logging
         return jsonify({'error': f'Login failed: {str(e)}'}), 500
+
 @app.route('/api/verify', methods=['GET'])
 @jwt_required()
 def verify():
     try:
         # Get current user ID from JWT token
         current_user_id = get_jwt_identity()
+        print(f"DEBUG: Verify - JWT identity: {current_user_id}, type: {type(current_user_id)}")
+        
+        # Convert to int if it's a string
+        if isinstance(current_user_id, str):
+            current_user_id = int(current_user_id)
         
         # Find user by ID
         user = User.query.get(current_user_id)
         
         if not user:
+            print(f"DEBUG: User not found for ID: {current_user_id}")
             return jsonify({'error': 'User not found'}), 404
         
         # Return success response with user info
@@ -427,6 +467,7 @@ def verify():
         }), 200
         
     except Exception as e:
+        print(f"DEBUG: Verify error: {str(e)}")
         return jsonify({'error': 'Token verification failed'}), 401
 
 @app.route('/api/logout', methods=['POST'])
@@ -436,21 +477,33 @@ def logout():
     # by removing the token from localStorage
     return jsonify({'message': 'Logout successful'}), 200
 
-# Get Current User Profile Route
+# FIXED: Get Current User Profile Route
 @app.route('/api/profile', methods=['GET'])
 @jwt_required()
 def get_profile():
     try:
         current_user_id = get_jwt_identity()
-        print(f"DEBUG: Current user ID from JWT: {current_user_id}")  # Debug logging
+        print(f"DEBUG: Profile - JWT identity: {current_user_id}, type: {type(current_user_id)}")
+        
+        # Handle both string and int JWT identities
+        if isinstance(current_user_id, str):
+            try:
+                current_user_id = int(current_user_id)
+            except ValueError:
+                print(f"DEBUG: Cannot convert JWT identity to int: {current_user_id}")
+                return jsonify({'error': 'Invalid token format'}), 422
+        
+        if current_user_id is None:
+            print("DEBUG: JWT identity is None")
+            return jsonify({'error': 'Token missing or invalid'}), 401
         
         current_user = User.query.get(current_user_id)
         
         if not current_user:
-            print(f"DEBUG: User not found for ID: {current_user_id}")  # Debug logging
+            print(f"DEBUG: User not found for ID: {current_user_id}")
             return jsonify({'error': 'User not found'}), 404
         
-        print(f"DEBUG: Found user: {current_user.email}, type: {current_user.user_type}")  # Debug logging
+        print(f"DEBUG: Found user: {current_user.email}, type: {current_user.user_type}")
         
         return jsonify({
             'user': {
@@ -463,7 +516,7 @@ def get_profile():
         }), 200
         
     except Exception as e:
-        print(f"DEBUG: Profile error: {str(e)}")  # Debug logging
+        print(f"DEBUG: Profile error: {str(e)}")
         return jsonify({'error': f'Failed to get profile: {str(e)}'}), 500
 
 # Update User Profile Route
@@ -472,6 +525,11 @@ def get_profile():
 def update_profile():
     try:
         current_user_id = get_jwt_identity()
+        
+        # Handle both string and int JWT identities
+        if isinstance(current_user_id, str):
+            current_user_id = int(current_user_id)
+            
         current_user = User.query.get(current_user_id)
         
         if not current_user:
@@ -511,35 +569,49 @@ def update_profile():
         
     except Exception as e:
         db.session.rollback()
+        print(f"DEBUG: Profile update error: {str(e)}")
         return jsonify({'error': 'Failed to update profile'}), 500
 
-# Error handler for JWT errors
+# IMPROVED Error handlers for JWT errors
 @app.errorhandler(422)
 def handle_unprocessable_entity(e):
-    print(f"DEBUG: 422 JWT Error: {str(e)}")  # Debug logging
-    return jsonify({'error': 'Invalid token format or malformed JWT'}), 422
+    print(f"DEBUG: 422 JWT Error: {str(e)}")
+    return jsonify({'error': 'Invalid token format or malformed JWT. Please login again.'}), 422
 
 @app.errorhandler(401)
 def handle_unauthorized(e):
-    print(f"DEBUG: 401 JWT Error: {str(e)}")  # Debug logging
-    return jsonify({'error': 'Token is invalid or expired'}), 401
+    print(f"DEBUG: 401 JWT Error: {str(e)}")
+    return jsonify({'error': 'Token is invalid or expired. Please login again.'}), 401
 
 @app.route('/api/properties/<int:id>', methods=['DELETE'])
+@jwt_required()  # Add JWT requirement
 def delete_property(id):
-    property = Property.query.get(id)
-    if not property:
-        return {"error": "Property not found"}, 404
-    
-    
-    for image in property.images:
-        # Delete physical files if they exist
-        file_path = os.path.join('uploads/properties', str(property.id), image.image_name)
-        if os.path.exists(file_path):
-            os.remove(file_path)
-    
-    db.session.delete(property)
-    db.session.commit()
-    return {"message": "Property deleted successfully"}, 200
+    try:
+        current_user_id = get_jwt_identity()
+        if isinstance(current_user_id, str):
+            current_user_id = int(current_user_id)
+            
+        property = Property.query.get(id)
+        if not property:
+            return {"error": "Property not found"}, 404
+        
+        # Check if user owns this property
+        if property.owner_id != current_user_id:
+            return {"error": "Unauthorized to delete this property"}, 403
+        
+        # Delete associated images
+        for image in property.images:
+            # Delete physical files if they exist
+            file_path = os.path.join('uploads/properties', str(property.id), image.image_name)
+            if os.path.exists(file_path):
+                os.remove(file_path)
+        
+        db.session.delete(property)
+        db.session.commit()
+        return {"message": "Property deleted successfully"}, 200
+    except Exception as e:
+        db.session.rollback()
+        return {"error": f"Failed to delete property: {str(e)}"}, 500
 
 @app.route('/api/properties/<int:property_id>/images/url', methods=['POST'])
 def add_property_image_url(property_id):
@@ -564,24 +636,32 @@ def add_property_image_url(property_id):
     
     return property_image.to_dict(), 201
 
+# FIXED: Get owner properties
 @app.route('/api/owners/<int:owner_id>/properties', methods=['GET'])
 @jwt_required()
 def get_owner_properties(owner_id):
-    current_user_id = get_jwt_identity()
-    
-    
-    # Make sure user can only access their own properties
-    if current_user_id != owner_id:
-        return {"error": "Unauthorized access"}, 403
-    
-    properties = Property.query.filter_by(owner_id=owner_id).all()
-    return [property.to_dict() for property in properties]
+    try:
+        current_user_id = get_jwt_identity()
+        if isinstance(current_user_id, str):
+            current_user_id = int(current_user_id)
+        
+        # Make sure user can only access their own properties
+        if current_user_id != owner_id:
+            return {"error": "Unauthorized access"}, 403
+        
+        properties = Property.query.filter_by(owner_id=owner_id).all()
+        return [property.to_dict() for property in properties]
+    except Exception as e:
+        return {"error": f"Failed to get properties: {str(e)}"}, 500
 
 @app.route('/api/bookings/<int:booking_id>/cancel', methods=['PUT'])
 @jwt_required()
 def cancel_booking(booking_id):
     try:
         current_user_id = get_jwt_identity()
+        if isinstance(current_user_id, str):
+            current_user_id = int(current_user_id)
+            
         current_user = User.query.get(current_user_id)
         if not current_user:
             return {"error": "User not found"}, 401
@@ -600,12 +680,16 @@ def cancel_booking(booking_id):
         return booking.to_dict(), 200
     except Exception as e:
         return {"error": str(e)}, 500
-    # Get bookings for current user (guest reservations)
+
+# Get bookings for current user (guest reservations)
 @app.route('/api/user/bookings', methods=['GET'])
 @jwt_required()
 def get_user_bookings():
     try:
         current_user_id = get_jwt_identity()
+        if isinstance(current_user_id, str):
+            current_user_id = int(current_user_id)
+            
         current_user = User.query.get(current_user_id)
         if not current_user:
             return {"error": "User not found"}, 401
@@ -616,12 +700,15 @@ def get_user_bookings():
     except Exception as e:
         return {"error": str(e)}, 500
 
-# Get bookings for owner's properties
+# Get bookings for owner's properties  
 @app.route('/api/owner/bookings', methods=['GET'])
 @jwt_required()
 def get_owner_bookings():
     try:
         current_user_id = get_jwt_identity()
+        if isinstance(current_user_id, str):
+            current_user_id = int(current_user_id)
+            
         current_user = User.query.get(current_user_id)
         if not current_user or current_user.user_type != 'owner':
             return {"error": "Owner access required"}, 403
@@ -642,6 +729,9 @@ def get_owner_bookings():
 def get_user_favorites():
     try:
         current_user_id = get_jwt_identity()
+        if isinstance(current_user_id, str):
+            current_user_id = int(current_user_id)
+            
         current_user = User.query.get(current_user_id)
         if not current_user:
             return {"error": "User not found"}, 401
@@ -657,6 +747,9 @@ def get_user_favorites():
 def add_favorite():
     try:
         current_user_id = get_jwt_identity()
+        if isinstance(current_user_id, str):
+            current_user_id = int(current_user_id)
+            
         current_user = User.query.get(current_user_id)
         if not current_user:
             return {"error": "User not found"}, 401
@@ -701,6 +794,9 @@ def add_favorite():
 def remove_favorite(property_id):
     try:
         current_user_id = get_jwt_identity()
+        if isinstance(current_user_id, str):
+            current_user_id = int(current_user_id)
+            
         current_user = User.query.get(current_user_id)
         if not current_user:
             return {"error": "User not found"}, 401
@@ -746,6 +842,7 @@ def get_available_properties():
         return [property.to_dict() for property in available_properties]
     except Exception as e:
         return {"error": str(e)}, 500
+
 # Add this import at the top with your other imports
 from seed import seed_database
 
