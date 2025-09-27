@@ -722,6 +722,27 @@ def get_available_properties():
         return [property.to_dict() for property in available_properties]
     except Exception as e:
         return {"error": str(e)}, 500
+# Add this import at the top with your other imports
+from seed import seed_database
+
+# Add this route somewhere in your app.py (after your other routes)
+@app.route('/api/seed-database', methods=['POST'])
+def seed_database_route():
+    """
+    One-time database seeding route
+    WARNING: Remove this route in production!
+    """
+    try:
+        seed_database()
+        return jsonify({
+            "message": "Database seeded successfully!",
+            "users": User.query.count(),
+            "properties": Property.query.count(),
+            "bookings": Booking.query.count()
+        }), 200
+    except Exception as e:
+        print(f"Seeding error: {str(e)}")
+        return jsonify({"error": f"Seeding failed: {str(e)}"}), 500
 
 def init_db():
     with app.app_context():
