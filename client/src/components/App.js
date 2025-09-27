@@ -43,6 +43,7 @@ function App() {
   }
 
   return (
+    
     <AuthContext.Provider value={{ user, login, logout }}>
       <Router>
         <Navbar />
@@ -67,5 +68,6 @@ function App() {
     </AuthContext.Provider>
   );
 }
+
 
 export default App;

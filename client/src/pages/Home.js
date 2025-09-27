@@ -11,18 +11,18 @@ function Home() {
     const fetchProperties = async () => {
       try {
         const response = await axios.get("/api/properties");
-        setProperties(response.data);
+      setProperties(Array.isArray(response.data) ? response.data : []);
       } catch (err) {
         setError("⚠️ Failed to load properties. Please try again later.");
+        setProperties([]); 
       } finally {
         setLoading(false);
       }
     };
     fetchProperties();
   }, []);
-
-  const filteredProperties = properties.filter((property) =>
-    property.name.toLowerCase().includes(search.toLowerCase())
+const filteredProperties = (properties || []).filter((property) =>
+property.name?.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
