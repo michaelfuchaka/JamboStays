@@ -33,7 +33,7 @@ function Home() {
       backgroundSize: 'cover',
       backgroundPosition: 'center',
        backgroundRepeat: 'no-repeat'}}>
-    <div className="hero-content">
+      <div className="hero-content">
     <h1 className="hero-title">Finding Your New Home Is Simple</h1>
     <p className="hero-subtitle">
       Discover handpicked properties for your next trip
