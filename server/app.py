@@ -707,6 +707,10 @@ def get_available_properties():
         return [property.to_dict() for property in available_properties]
     except Exception as e:
         return {"error": str(e)}, 500
+    
+@app.before_first_request
+def create_tables():
+    db.create_all()
 
 if __name__ == '__main__':
       port = int(os.environ.get('PORT', 5000))
