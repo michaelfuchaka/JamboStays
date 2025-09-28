@@ -867,7 +867,6 @@ def seed_database_route():
 
 def init_db():
     with app.app_context():
-        db.drop_all()  # Drop all existing tables
         db.create_all()  # Recreate with new schema
         print("Database tables recreated with updated schema!")    
 
