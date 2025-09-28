@@ -28,14 +28,18 @@ function App() {
     setLoading(false);
   }, []);
 const login = (userData, token) => {
-  localStorage.setItem('token', token);
+  console.log('LOGIN FUNCTION CALLED');
+  console.log('User data:', userData);
+  console.log('Token received:', token);
+  
+  localStorage.setItem('access_token', token);
   localStorage.setItem('user', JSON.stringify(userData));
   setUser(userData);
-
-  // ⬅️ attach token to axios immediately
+  
+  console.log('Token stored:', localStorage.getItem('access_token'));
+  
   api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 };
-
   const logout = () => {
   localStorage.removeItem('token');
   localStorage.removeItem('user');

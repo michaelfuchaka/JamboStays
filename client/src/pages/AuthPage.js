@@ -77,7 +77,7 @@ function AuthPage() {
             email: formData.email,
             password: formData.password,
             name: formData.name,
-            user_type: formData.userType  
+            user_type: formData.userType  // Correct mapping to backend
           };
 
       console.log("Making request to:", `https://jambostays-backend-v2.onrender.com/api${endpoint}`);
@@ -96,8 +96,14 @@ function AuthPage() {
       console.log("Response data:", data);
 
       if (response.ok) {
-        // FIXED: Store the token properly and call login with correct data
+        console.log("About to call login function...");
+        console.log("User data to store:", data.user);
+        console.log("Token to store:", data.access_token);
+        
+        // Store token and user data using the context login function
         login(data.user, data.access_token);
+        
+        console.log("Login function called successfully");
         
         // Navigate based on user type
         if (data.user.user_type === "owner") {
