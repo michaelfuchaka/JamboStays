@@ -3,7 +3,7 @@
 # Standard library imports
 
 # Remote library imports
-from flask import Flask, send_from_directory, request, jsonify
+from flask import Flask, send_from_directory, request, jsonify, make_response
 from flask import send_from_directory
 from flask_restful import Resource
 import os
@@ -17,6 +17,24 @@ from flask_cors import CORS
 from config import app, db, api, allowed_file
 from models import Owner, Property, Booking,PropertyImage, User
 
+# FIXED: Proper CORS Configuration
+CORS(app, 
+     origins=["https://jambo-stays1.vercel.app"],  # Your frontend URL
+     methods=['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+     allow_headers=['Content-Type', 'Authorization'],
+     supports_credentials=True
+)
+
+# Handle preflight requests
+@app.before_request
+def handle_preflight():
+    if request.method == "OPTIONS":
+        response = make_response()
+        response.headers.add("Access-Control-Allow-Origin", "https://jambo-stays1.vercel.app")
+        response.headers.add('Access-Control-Allow-Headers', "Content-Type,Authorization")
+        response.headers.add('Access-Control-Allow-Methods', "GET,PUT,POST,DELETE,PATCH,OPTIONS")
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        return response
 
 # Add this route after your imports:
 @app.route('/health')
@@ -47,14 +65,10 @@ def log_request_info():
     if request.endpoint == 'get_profile':
         print(f"DEBUG: Profile request - Headers: {dict(request.headers)}")
         print(f"DEBUG: Profile request - Authorization: {request.headers.get('Authorization', 'None')}")
-    
-
-CORS(app, origins='*', credentials=True, methods=['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'])
 
 from flask import request
 
 # Removed duplicate property creation route
-
 
 @app.route('/api/properties', methods=['GET'])
 def get_properties():
@@ -64,14 +78,12 @@ def get_properties():
     except Exception as e:
         return {'error': f'Database error: {str(e)}'}, 500
 
-
 @app.route('/api/properties/<int:id>', methods=['GET'])
 def get_property(id):
     property = Property.query.get(id)
     if not property:
         return {"error": "Property not found"}, 404
     return property.to_dict()
-
 
 @app.route('/api/bookings', methods=['POST'])
 @jwt_required() 
@@ -113,7 +125,6 @@ def create_booking():
     db.session.commit()
     
     return booking.to_dict(), 201
-
 
 # Owners endpoints
 @app.route('/api/owners', methods=['GET'])
@@ -312,7 +323,6 @@ def is_valid_email(email):
     pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     return re.match(pattern, email) is not None
 
-
 @app.route('/api/register', methods=['POST'])
 def register():
     try:
@@ -362,7 +372,7 @@ def register():
         db.session.add(new_user)
         db.session.commit()
         
-        # Create access token
+        # FIXED: Create access token with string identity
         access_token = create_access_token(identity=str(new_user.id))
         
         # Return success response
@@ -416,7 +426,7 @@ def login():
         
         print(f"DEBUG: Login successful for user: {user.email}")  # Debug logging
         
-        # Create access token with user ID as integer
+        # Create access token with user ID as string
         access_token = create_access_token(identity=str(user.id))  # Convert to string
         
         # Return success response
