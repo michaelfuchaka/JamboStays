@@ -17,9 +17,8 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
+  
 );
 
 // Add response interceptor for better error handling

@@ -77,7 +77,7 @@ function AuthPage() {
             email: formData.email,
             password: formData.password,
             name: formData.name,
-            user_type: formData.userType  // FIXED: Send as user_type not userType
+            user_type: formData.userType  
           };
 
       console.log("Making request to:", `https://jambostays-backend-v2.onrender.com/api${endpoint}`);
