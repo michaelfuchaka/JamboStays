@@ -17,7 +17,6 @@ from flask_cors import CORS
 from config import app, db, api, allowed_file
 from models import Owner, Property, Booking,PropertyImage, User
 
-CORS(app, resources={r"/api/*": {"origins": "https://jambo-stays1.vercel.app"}}, supports_credentials=True)
 
 # Add this route after your imports:
 @app.route('/health')
@@ -364,7 +363,7 @@ def register():
         db.session.commit()
         
         # Create access token
-        access_token = create_access_token(identity=new_user.id)
+        access_token = create_access_token(identity=str(new_user.id))
         
         # Return success response
         return jsonify({
